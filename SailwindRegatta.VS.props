@@ -1,0 +1,6 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <SailwindDir>C:\Program Files (x86)\Steam\steamapps\common\Sailwind</SailwindDir>
+    <BepInExPluginsDirectory>$(SailwindDir)\BepInEx\plugins\</BepInExPluginsDirectory>
+  </PropertyGroup>
+</Project>

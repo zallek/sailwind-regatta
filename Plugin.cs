@@ -27,6 +27,8 @@ namespace SailwindRegatta
 
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), PLUGIN_GUID);
 
+            gameObject.AddComponent<RaceManager>();
+
             Log.LogInfo($"{PLUGIN_NAME} v{PLUGIN_VERSION} loaded.");
         }
     }

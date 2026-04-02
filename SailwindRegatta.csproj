@@ -47,8 +47,20 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patches\SaveLoadPatches.cs" />
+    <Compile Include="Races\ActiveRace.cs" />
+    <Compile Include="Races\PortArrivalTrigger.cs" />
+    <Compile Include="Races\RaceDefinition.cs" />
+    <Compile Include="Races\RaceManager.cs" />
+    <Compile Include="Races\RaceRegistry.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -104,14 +104,4 @@ namespace SailwindRegatta
             ActiveRace = null;
         }
     }
-
-    // Patch Port.Start() to inject arrival triggers as island scenes load.
-    [HarmonyPatch(typeof(Port), "Start")]
-    internal class PortStartPatch
-    {
-        static void Postfix(Port __instance)
-        {
-            RaceManager.Instance?.TryInjectTrigger(__instance);
-        }
-    }
 }

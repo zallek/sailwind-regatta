@@ -1,13 +1,29 @@
 using System;
-using HarmonyLib;
 using UnityEngine;
 
 namespace SailwindRegatta
 {
-    [HarmonyPatch(typeof(SaveLoadManager), "SaveModData")]
-    internal class SaveModDataPatch
+    
+    [Serializable]
+    internal class ActiveRaceSaveEntry
     {
-        static void Postfix()
+        public int raceId;
+        public int checkpointIndex;
+        public int startDay;
+        public float startGameTime;
+    }
+
+    [Serializable]
+    internal class SRSaveData
+    {
+        // JsonUtility doesn't handle null object fields well, so we use an explicit flag.
+        public bool hasActiveRace;
+        public ActiveRaceSaveEntry activeRace = new ActiveRaceSaveEntry();
+    }
+
+    internal static class SaveManager
+    {
+        public static void Save()
         {
             var payload = new SRSaveData();
 
@@ -26,12 +42,8 @@ namespace SailwindRegatta
 
             GameState.modData["SailwindRegatta"] = JsonUtility.ToJson(payload);
         }
-    }
 
-    [HarmonyPatch(typeof(SaveLoadManager), "LoadModData")]
-    internal class LoadModDataPatch
-    {
-        static void Postfix()
+        public static void Load()
         {
             if (!GameState.modData.ContainsKey("SailwindRegatta")) return;
 
@@ -50,22 +62,5 @@ namespace SailwindRegatta
             if (RaceManager.Instance != null)
                 RaceManager.Instance.ActiveRace = active;
         }
-    }
-
-    [Serializable]
-    internal class ActiveRaceSaveEntry
-    {
-        public int raceId;
-        public int checkpointIndex;
-        public int startDay;
-        public float startGameTime;
-    }
-
-    [Serializable]
-    internal class SRSaveData
-    {
-        // JsonUtility doesn't handle null object fields well, so we use an explicit flag.
-        public bool hasActiveRace;
-        public ActiveRaceSaveEntry activeRace = new ActiveRaceSaveEntry();
     }
 }

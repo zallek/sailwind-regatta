@@ -55,14 +55,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Patches\SaveLoadPatches.cs" />
-    <Compile Include="Races\ActiveRace.cs" />
-    <Compile Include="Races\PortArrivalTrigger.cs" />
-    <Compile Include="Races\RaceDefinition.cs" />
-    <Compile Include="Races\RaceManager.cs" />
-    <Compile Include="Races\RaceRegistry.cs" />
+    <Compile Include="Patches\SaveLoadManagerPatches.cs" />
+    <Compile Include="Patches\PortPatches.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scripts\ActiveRace.cs" />
+    <Compile Include="Scripts\PortArrivalTrigger.cs" />
+    <Compile Include="Scripts\RaceDefinition.cs" />
+    <Compile Include="Scripts\RaceRegistry.cs" />
+    <Compile Include="Scripts\RaceManager.cs" />
+    <Compile Include="Scripts\SaveManager.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)SailwindRegatta.VS.props" />

@@ -10,9 +10,9 @@ namespace SailwindRegatta
 
         private void OnTriggerEnter(Collider other)
         {
-            Plugin.Log.LogInfo($"PortArrivalTrigger OnTriggerEnter: {other.name}");
-            if (other.CompareTag("Player"))
+            if (other.CompareTag("Player")) {
                 RaceManager.Instance?.OnPlayerEnteredPort(Port);
+            }
         }
     }
 }

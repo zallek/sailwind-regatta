@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using HarmonyLib;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace SailwindRegatta
@@ -9,7 +10,7 @@ namespace SailwindRegatta
         public static RaceManager Instance { get; private set; }
 
         // Set by SaveLoadPatches when a save is loaded.
-        internal ActiveRace ActiveRace { get; set; }
+        internal Run ActiveRun { get; set; }
 
         // Ports that need a trigger injected, keyed by port name.
         // Built from all unique port names across all races.
@@ -50,7 +51,7 @@ namespace SailwindRegatta
 
             var portName = port.GetPortName();
 
-            if (ActiveRace == null)
+            if (ActiveRun == null)
             {
                 TryStartRace(portName);
             }
@@ -65,43 +66,71 @@ namespace SailwindRegatta
             var race = RaceRegistry.Races.Find(r => r.StartPortName == portName);
             if (race == null) return;
 
-            ActiveRace = new ActiveRace(race, GameState.day, Sun.sun.globalTime);
+            var startedAt = DateTime.UtcNow;
+            ActiveRun = new Run(race, GameState.day, startedAt);
 
             Plugin.Log.LogInfo($"Race started: {race.DisplayName}");
             NotificationUi.instance.ShowNotification(
-                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRace.NextPortName}", 15f);
+                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRun.NextPortName}", 15f);
+
+            if (Plugin.Session != null)
+                _ = SaveRunStartedAsync(race.Id, startedAt);
+        }
+
+        private async Task SaveRunStartedAsync(int raceId, DateTime startedAt)
+        {
+            string id = await SupabaseClient.StartRunAsync(Plugin.Session, raceId, startedAt);
+            if (id != null && ActiveRun != null)
+            {
+                ActiveRun.Id = id;
+                SaveManager.Save();
+                Plugin.Log.LogInfo($"Run started on Supabase. Run id: {id}");
+            }
         }
 
         private void TryAdvanceCheckpoint(string portName)
         {
-            if (portName != ActiveRace.NextPortName) return;
+            if (portName != ActiveRun.NextPortName) return;
 
-            ActiveRace.NextCheckpointIndex++;
+            ActiveRun.NextCheckpointIndex++;
 
-            if (ActiveRace.IsFinished)
+            if (ActiveRun.IsFinished)
             {
                 FinishRace();
             }
             else
             {
-                int reached = ActiveRace.NextCheckpointIndex;
-                int total = ActiveRace.Definition.CheckpointPortNames.Length - 1;
+                int reached = ActiveRun.NextCheckpointIndex;
+                int total = ActiveRun.Race.CheckpointPortNames.Length - 1;
                 Plugin.Log.LogInfo($"Checkpoint {reached}/{total}: {portName}");
                 NotificationUi.instance.ShowNotification(
-                    $"Checkpoint {reached} / {total}\n{portName}\nHead to: {ActiveRace.NextPortName}", 15f);
+                    $"Checkpoint {reached} / {total}\n{portName}\nHead to: {ActiveRun.NextPortName}", 15f);
             }
         }
 
         private void FinishRace()
         {
-            float elapsed = ActiveRace.ElapsedGameHours(GameState.day, Sun.sun.globalTime);
-            string raceName = ActiveRace.Definition.DisplayName;
+            string raceName  = ActiveRun.Race.DisplayName;
+            string runId   = ActiveRun.Id;
+            var    finishedAt = DateTime.UtcNow;
+            int    duration  = (int)(finishedAt - ActiveRun.StartedAt).TotalSeconds;
 
-            Plugin.Log.LogInfo($"Race finished: {raceName} in {elapsed:F1} game hours");
+            Plugin.Log.LogInfo($"Race finished: {raceName} in {duration}s");
             NotificationUi.instance.ShowNotification(
-                $"{raceName}\nFinished! {elapsed:F1} game hours", 15f);
+                $"{raceName}\nFinished in {duration}s!", 15f);
 
-            ActiveRace = null;
+            ActiveRun = null;
+            SaveManager.Save();
+
+            if (Plugin.Session != null && runId != null)
+                _ = SaveRunFinishedAsync(runId, finishedAt, duration);
+        }
+
+        private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration)
+        {
+            await SupabaseClient.FinishRunAsync(runId, finishedAt, duration);
+            SaveManager.Save();
+            Plugin.Log.LogInfo($"Run finished on Supabase. Run id: {runId}");
         }
     }
 }

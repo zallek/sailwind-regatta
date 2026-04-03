@@ -322,3 +322,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Sailwind Regatta secrets — never commit
+Secrets.cs

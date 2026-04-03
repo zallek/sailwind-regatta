@@ -2,7 +2,7 @@ using System.Linq;
 
 namespace SailwindRegatta
 {
-    internal class RaceDefinition
+    internal class Race
     {
         public int Id { get; }
         public string DisplayName { get; }
@@ -49,14 +49,13 @@ namespace SailwindRegatta
         public string StartPortName => PortNames[0];
 
         // Everything after the start: intermediate checkpoints + finish destination.
-        public string[] CheckpointPortNames { get; }
+        public string[] CheckpointPortNames => PortNames.Skip(1).ToArray();
 
-        public RaceDefinition(int id, string displayName, string[] portNames)
+        public Race(int id, string displayName, string[] portNames)
         {
             Id = id;
             DisplayName = displayName;
             PortNames = portNames;
-            CheckpointPortNames = portNames.Skip(1).ToArray();
         }
     }
 }

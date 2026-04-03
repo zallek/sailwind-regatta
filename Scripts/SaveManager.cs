@@ -5,23 +5,17 @@ using UnityEngine;
 namespace SailwindRegatta
 {
 
-    [Serializable]
-    internal class RunSaveEntry
-    {
-        public int    raceId;
-        public int    checkpointIndex;
-        public int    startDay;
-        public string id;              // Supabase run id; empty if StartRunAsync hasn't resolved yet
-        public string startedAtUtc;    // ISO 8601 round-trip string of Run.StartedAt
-        public int    boatTypeId;      // -1 when BoatTypeId is null (JsonUtility cannot serialize int?).
-    }
-
+    // NOTE: JsonUtility silently drops nested [Serializable] objects — keep this class flat.
     [Serializable]
     internal class SRSaveData
     {
-        // JsonUtility doesn't handle null object fields well, so we use an explicit flag.
-        public bool hasActiveRace;
-        public RunSaveEntry activeRace = new RunSaveEntry();
+        public bool   hasActiveRace;
+        public int    raceId;
+        public int    checkpointIndex;
+        public int    startDay;
+        public string id;           // Supabase run id; empty if StartRunAsync hasn't resolved yet
+        public string startedAtUtc; // ISO 8601 round-trip string of Run.StartedAt
+        public int    boatTypeId;   // -1 when BoatTypeId is null (JsonUtility cannot serialize int?)
     }
 
     internal static class SaveManager
@@ -33,48 +27,66 @@ namespace SailwindRegatta
             var active = RaceManager.Instance?.ActiveRun;
             if (active != null)
             {
-                payload.hasActiveRace = true;
-                payload.activeRace = new RunSaveEntry
-                {
-                    raceId          = active.Race.Id,
-                    checkpointIndex = active.NextCheckpointIndex,
-                    startDay        = active.StartDay,
-                    id              = active.Id ?? string.Empty,
-                    startedAtUtc    = active.StartedAt.ToString("o"),
-                    boatTypeId      = active.BoatTypeId ?? -1
-                };
+                payload.hasActiveRace   = true;
+                payload.raceId          = active.Race.Id;
+                payload.checkpointIndex = active.NextCheckpointIndex;
+                payload.startDay        = active.StartDay;
+                payload.id              = active.Id ?? string.Empty;
+                payload.startedAtUtc    = active.StartedAt.ToString("o");
+                payload.boatTypeId      = active.BoatTypeId ?? -1;
             }
 
-            GameState.modData["SailwindRegatta"] = JsonUtility.ToJson(payload);
+            string json = JsonUtility.ToJson(payload);
+
+            if (GameState.modData.ContainsKey(Plugin.PLUGIN_GUID))
+                GameState.modData[Plugin.PLUGIN_GUID] = json;
+            else
+                GameState.modData.Add(Plugin.PLUGIN_GUID, json);
         }
 
         public static void Load()
         {
-            if (!GameState.modData.ContainsKey("SailwindRegatta")) return;
+            if (!GameState.modData.ContainsKey(Plugin.PLUGIN_GUID)) return;
 
-            var payload = JsonUtility.FromJson<SRSaveData>(GameState.modData["SailwindRegatta"]);
-            if (payload == null || !payload.hasActiveRace) return;
-
-            var entry = payload.activeRace;
-            var race = RaceRegistry.GetById(entry.raceId);
-            if (race == null) return;
-
-            DateTime startedAt = DateTime.UtcNow;
-            if (!string.IsNullOrEmpty(entry.startedAtUtc))
-                DateTime.TryParse(entry.startedAtUtc, null, DateTimeStyles.RoundtripKind, out startedAt);
-
-            int? boatTypeId = entry.boatTypeId >= 0 ? entry.boatTypeId : (int?)null;
-            string id = string.IsNullOrEmpty(entry.id) ? null : entry.id;
-
-            var active = new Run(race, entry.startDay, startedAt)
+            string json = GameState.modData[Plugin.PLUGIN_GUID];
+            var payload = JsonUtility.FromJson<SRSaveData>(json);
+            if (payload == null)
             {
-                NextCheckpointIndex = entry.checkpointIndex,
+                Plugin.Log.LogError("Failed to parse mod data from save.");
+                return;
+            }
+            if (!payload.hasActiveRace) return;
+
+            var race = RaceRegistry.GetById(payload.raceId);
+            if (race == null)
+            {
+                Plugin.Log.LogError($"Saved run references unknown race id {payload.raceId}.");
+                return;
+            }
+
+            DateTime startedAt;
+            if (string.IsNullOrEmpty(payload.startedAtUtc) ||
+                !DateTime.TryParse(payload.startedAtUtc, null, DateTimeStyles.RoundtripKind, out startedAt))
+                startedAt = DateTime.UtcNow;
+
+            int? boatTypeId = payload.boatTypeId >= 0 ? payload.boatTypeId : (int?)null;
+            string id = string.IsNullOrEmpty(payload.id) ? null : payload.id;
+
+            var active = new Run(race, payload.startDay, startedAt)
+            {
+                NextCheckpointIndex = payload.checkpointIndex,
                 Id                  = id,
                 BoatTypeId          = boatTypeId
             };
 
-            if (RaceManager.Instance != null)
-                RaceManager.Instance.ActiveRun = active;
+            if (RaceManager.Instance == null)
+            {
+                Plugin.Log.LogError("RaceManager not ready when loading save.");
+                return;
+            }
+
+            RaceManager.Instance.ActiveRun = active;
+            Plugin.Log.LogInfo($"Active run restored from save (race {race.DisplayName}, run id: {id}).");
         }
     }
 }

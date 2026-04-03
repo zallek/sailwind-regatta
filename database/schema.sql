@@ -17,13 +17,15 @@ CREATE TABLE player (
 );
 
 CREATE TABLE run (
-    id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-    player_id   uuid        NOT NULL REFERENCES player(id),
-    race_id     int         NOT NULL REFERENCES race(id),
-    started_at  timestamptz NOT NULL,
-    finished_at timestamptz,   -- NULL while in progress
-    duration    int,           -- real-world seconds, NULL until finish
-    created_at  timestamptz NOT NULL DEFAULT now()
+    id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+    player_id    uuid        NOT NULL REFERENCES player(id),
+    race_id      int         NOT NULL REFERENCES race(id),
+    boat_type_id int,             -- SaveableObject.sceneIndex, NULL until first steering-wheel use
+    started_at   timestamptz NOT NULL,
+    finished_at  timestamptz,     -- NULL while in progress
+    aborted_at   timestamptz,     -- NULL unless aborted
+    duration     int,             -- real-world seconds, NULL until finish
+    created_at   timestamptz NOT NULL DEFAULT now()
 );
 
 -- ============================================================
@@ -56,7 +58,7 @@ AS $$
     RETURNING id;
 $$;
 
-CREATE OR REPLACE FUNCTION finish_run(run_id uuid, finished_at timestamptz, duration int)
+CREATE OR REPLACE FUNCTION finish_run(run_id uuid, finished_at timestamptz, duration int, boat_type_id int DEFAULT NULL)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
 AS $$
@@ -64,9 +66,27 @@ DECLARE
     n int;
 BEGIN
     UPDATE public.run AS t
-    SET finished_at = $2,
-        duration = $3
-    WHERE t.id = $1 AND t.finished_at IS NULL;
+    SET finished_at  = $2,
+        duration     = $3,
+        boat_type_id = $4
+    WHERE t.id = $1 AND t.finished_at IS NULL AND t.aborted_at IS NULL;
+    GET DIAGNOSTICS n = ROW_COUNT;
+    IF n = 0 THEN
+        RAISE EXCEPTION 'run not found or already finished';
+    END IF;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION abort_run(run_id uuid, aborted_at timestamptz)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+    n int;
+BEGIN
+    UPDATE public.run AS t
+    SET aborted_at = $2
+    WHERE t.id = $1 AND t.finished_at IS NULL AND t.aborted_at IS NULL;
     GET DIAGNOSTICS n = ROW_COUNT;
     IF n = 0 THEN
         RAISE EXCEPTION 'run not found or already finished';

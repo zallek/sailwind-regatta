@@ -25,12 +25,30 @@ namespace SailwindRegatta
         public string started_at;  // ISO 8601 UTC string
     }
 
-    // Used by the finish_run RPC — field names must match the SQL function parameter names.
+    // Used by the finish_run RPC when boat type is known.
     [Serializable]
     internal class FinishRunRpcRequest
     {
         public string run_id;
-        public string finished_at;  // ISO 8601 UTC string
-        public int    duration;     // real-world seconds
+        public string finished_at;   // ISO 8601 UTC string
+        public int    duration;      // real-world seconds
+        public int    boat_type_id;  // SaveableObject.sceneIndex
+    }
+
+    // Used by the finish_run RPC when boat type is unknown (omits boat_type_id so the DB default NULL applies).
+    [Serializable]
+    internal class FinishRunNoBoatRpcRequest
+    {
+        public string run_id;
+        public string finished_at;
+        public int    duration;
+    }
+
+    // Used by the abort_run RPC — field names must match the SQL function parameter names.
+    [Serializable]
+    internal class AbortRunRpcRequest
+    {
+        public string run_id;
+        public string aborted_at;  // ISO 8601 UTC string
     }
 }

@@ -138,10 +138,11 @@ namespace SailwindRegatta
 
         private void FinishRace()
         {
-            string raceName  = ActiveRun.Race.DisplayName;
-            string runId   = ActiveRun.Id;
+            string raceName   = ActiveRun.Race.DisplayName;
+            string runId      = ActiveRun.Id;
+            int?   boatTypeId = ActiveRun.BoatTypeId;
             var    finishedAt = DateTime.UtcNow;
-            int    duration  = (int)(finishedAt - ActiveRun.StartedAt).TotalSeconds;
+            int    duration   = (int)(finishedAt - ActiveRun.StartedAt).TotalSeconds;
 
             Plugin.Log.LogInfo($"Race finished: {raceName} in {duration}s");
             NotificationUi.instance.ShowNotification(
@@ -150,12 +151,12 @@ namespace SailwindRegatta
             ActiveRun = null;
 
             if (Plugin.Session != null && runId != null)
-                _ = SaveRunFinishedAsync(runId, finishedAt, duration);
+                _ = SaveRunFinishedAsync(runId, finishedAt, duration, boatTypeId);
         }
 
-        private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration)
+        private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration, int? boatTypeId)
         {
-            await SupabaseClient.FinishRunAsync(runId, finishedAt, duration);
+            await SupabaseClient.FinishRunAsync(runId, finishedAt, duration, boatTypeId);
             Plugin.Log.LogInfo($"Run finished on Supabase. Run id: {runId}");
         }
 
@@ -164,9 +165,21 @@ namespace SailwindRegatta
             if (ActiveRun == null)
                 return;
 
+            string runId     = ActiveRun.Id;
+            var    abortedAt = DateTime.UtcNow;
+
             Plugin.Log.LogInfo($"Race aborted: {reason}");
             NotificationUi.instance.ShowNotification($"Race aborted\n{reason}", 15f);
             ActiveRun = null;
+
+            if (Plugin.Session != null && runId != null)
+                _ = SaveRunAbortedAsync(runId, abortedAt);
+        }
+
+        private async Task SaveRunAbortedAsync(string runId, DateTime abortedAt)
+        {
+            await SupabaseClient.AbortRunAsync(runId, abortedAt);
+            Plugin.Log.LogInfo($"Run aborted on Supabase. Run id: {runId}");
         }
     }
 }

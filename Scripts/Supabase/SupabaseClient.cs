@@ -87,16 +87,24 @@ namespace SailwindRegatta
         }
 
         // Calls finish_run RPC. Run UUID acts as proof of ownership; trigger still enforces immutability.
-        internal static async Task FinishRunAsync(string runGuid, DateTime finishedAt, int durationSeconds)
+        internal static async Task FinishRunAsync(string runId, DateTime finishedAt, int durationSeconds, int? boatTypeId)
         {
             try
             {
-                var body = JsonUtility.ToJson(new FinishRunRpcRequest
-                {
-                    run_id      = runGuid,
-                    finished_at = finishedAt.ToString("o"),
-                    duration    = durationSeconds
-                });
+                string body = boatTypeId.HasValue
+                    ? JsonUtility.ToJson(new FinishRunRpcRequest
+                    {
+                        run_id       = runId,
+                        finished_at  = finishedAt.ToString("o"),
+                        duration     = durationSeconds,
+                        boat_type_id = boatTypeId.Value
+                    })
+                    : JsonUtility.ToJson(new FinishRunNoBoatRpcRequest
+                    {
+                        run_id      = runId,
+                        finished_at = finishedAt.ToString("o"),
+                        duration    = durationSeconds
+                    });
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/finish_run", body);
                 var response = await _http.SendAsync(req);
@@ -109,6 +117,30 @@ namespace SailwindRegatta
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"Supabase FinishRunAsync exception: {ex.Message}");
+            }
+        }
+
+        internal static async Task AbortRunAsync(string runId, DateTime abortedAt)
+        {
+            try
+            {
+                var body = JsonUtility.ToJson(new AbortRunRpcRequest
+                {
+                    run_id     = runId,
+                    aborted_at = abortedAt.ToString("o")
+                });
+
+                var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/abort_run", body);
+                var response = await _http.SendAsync(req);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string raw = await response.Content.ReadAsStringAsync();
+                    Plugin.Log.LogError($"Supabase abort_run failed ({(int)response.StatusCode}): {raw}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"Supabase AbortRunAsync exception: {ex.Message}");
             }
         }
 

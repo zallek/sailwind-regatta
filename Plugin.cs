@@ -14,6 +14,7 @@ namespace SailwindRegatta
 
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
+        internal static SteamUser LocalPlayer { get; private set; }
 
         private void Awake()
         {
@@ -28,6 +29,12 @@ namespace SailwindRegatta
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), PLUGIN_GUID);
 
             gameObject.AddComponent<RaceManager>();
+
+            LocalPlayer = SteamUtils.GetCurrentUser();
+            if (LocalPlayer != null)
+                Log.LogInfo($"Player: {LocalPlayer.PersonaName} (SteamId: {LocalPlayer.SteamId})");
+            else
+                Log.LogWarning("Could not retrieve Steam user.");
 
             Log.LogInfo($"{PLUGIN_NAME} v{PLUGIN_VERSION} loaded.");
         }

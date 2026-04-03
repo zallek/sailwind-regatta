@@ -25,6 +25,12 @@ namespace SailwindRegatta
                     _racePortNames.Add(name);
         }
 
+        private void Update()
+        {
+            if (ActiveRun != null && !Sun.SunPaused())
+                ActiveRun.ElapsedSeconds += Time.unscaledDeltaTime;
+        }
+
         internal void OnSteeringWheelActivated(Rudder rudder)
         {
             int? boatTypeId = BoatTypeHelper.TryGetBoatTypeIdFromRudder(rudder);
@@ -142,7 +148,7 @@ namespace SailwindRegatta
             string runId      = ActiveRun.Id;
             int?   boatTypeId = ActiveRun.BoatTypeId;
             var    finishedAt = DateTime.UtcNow;
-            int    duration   = (int)(finishedAt - ActiveRun.StartedAt).TotalSeconds;
+            int    duration   = (int)ActiveRun.ElapsedSeconds;
 
             Plugin.Log.LogInfo($"Race finished: {raceName} in {duration}s");
             NotificationUi.instance.ShowNotification(

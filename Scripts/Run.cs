@@ -18,6 +18,9 @@ namespace SailwindRegatta
         // Persisted in save data so the run can be finished after a game restart.
         public string Id { get; set; }
 
+        // SaveableObject.sceneIndex on the hull; null until first steering-wheel use this run.
+        public int? BoatTypeId { get; set; }
+
         public string NextPortName => Race.CheckpointPortNames[NextCheckpointIndex];
         public bool IsFinished => NextCheckpointIndex >= Race.CheckpointPortNames.Length;
 

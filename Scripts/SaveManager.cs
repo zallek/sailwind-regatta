@@ -13,6 +13,7 @@ namespace SailwindRegatta
         public int    startDay;
         public string id;              // Supabase run id; empty if StartRunAsync hasn't resolved yet
         public string startedAtUtc;    // ISO 8601 round-trip string of Run.StartedAt
+        public int    boatTypeId;      // -1 when BoatTypeId is null (JsonUtility cannot serialize int?).
     }
 
     [Serializable]
@@ -39,7 +40,8 @@ namespace SailwindRegatta
                     checkpointIndex = active.NextCheckpointIndex,
                     startDay        = active.StartDay,
                     id              = active.Id ?? string.Empty,
-                    startedAtUtc    = active.StartedAt.ToString("o")
+                    startedAtUtc    = active.StartedAt.ToString("o"),
+                    boatTypeId      = active.BoatTypeId ?? -1
                 };
             }
 
@@ -61,10 +63,14 @@ namespace SailwindRegatta
             if (!string.IsNullOrEmpty(entry.startedAtUtc))
                 DateTime.TryParse(entry.startedAtUtc, null, DateTimeStyles.RoundtripKind, out startedAt);
 
+            int? boatTypeId = entry.boatTypeId >= 0 ? entry.boatTypeId : (int?)null;
+            string id = string.IsNullOrEmpty(entry.id) ? null : entry.id;
+
             var active = new Run(race, entry.startDay, startedAt)
             {
                 NextCheckpointIndex = entry.checkpointIndex,
-                Id                  = string.IsNullOrEmpty(entry.id) ? null : entry.id
+                Id                  = id,
+                BoatTypeId          = boatTypeId
             };
 
             if (RaceManager.Instance != null)

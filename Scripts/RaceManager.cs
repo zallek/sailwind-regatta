@@ -25,6 +25,34 @@ namespace SailwindRegatta
                     _racePortNames.Add(name);
         }
 
+        internal void OnSteeringWheelActivated(Rudder rudder)
+        {
+            int? boatTypeId = BoatTypeHelper.TryGetBoatTypeIdFromRudder(rudder);
+            if (boatTypeId != null)
+                Plugin.Log.LogInfo($"Steering wheel activated — boat type id: {boatTypeId.Value}");
+            else
+                Plugin.Log.LogWarning("Steering wheel activated — could not resolve boat type id for this rudder.");
+
+            if (ActiveRun == null)
+                return;
+
+            if (boatTypeId == null)
+                return;
+
+            if (ActiveRun.BoatTypeId == null)
+            {
+                ActiveRun.BoatTypeId = boatTypeId;
+
+                Plugin.Log.LogInfo($"Run locked to boat type id {boatTypeId.Value}");
+                return;
+            }
+
+            if (ActiveRun.BoatTypeId.Value != boatTypeId.Value)
+                AbortRace("You switched to a different boat.");
+        }
+
+
+
         // Called by the Port.Start() patch when any port initialises.
         // Injects a trigger collider if this port is part of a race.
         internal void TryInjectTrigger(Port port)
@@ -83,7 +111,7 @@ namespace SailwindRegatta
             if (id != null && ActiveRun != null)
             {
                 ActiveRun.Id = id;
-                SaveManager.Save();
+
                 Plugin.Log.LogInfo($"Run started on Supabase. Run id: {id}");
             }
         }
@@ -120,7 +148,6 @@ namespace SailwindRegatta
                 $"{raceName}\nFinished in {duration}s!", 15f);
 
             ActiveRun = null;
-            SaveManager.Save();
 
             if (Plugin.Session != null && runId != null)
                 _ = SaveRunFinishedAsync(runId, finishedAt, duration);
@@ -129,8 +156,17 @@ namespace SailwindRegatta
         private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration)
         {
             await SupabaseClient.FinishRunAsync(runId, finishedAt, duration);
-            SaveManager.Save();
             Plugin.Log.LogInfo($"Run finished on Supabase. Run id: {runId}");
+        }
+
+        internal void AbortRace(string reason)
+        {
+            if (ActiveRun == null)
+                return;
+
+            Plugin.Log.LogInfo($"Race aborted: {reason}");
+            NotificationUi.instance.ShowNotification($"Race aborted\n{reason}", 15f);
+            ActiveRun = null;
         }
     }
 }

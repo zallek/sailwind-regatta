@@ -4,7 +4,7 @@ using HarmonyLib;
 namespace SailwindRegatta
 {
     [HarmonyPatch(typeof(SaveLoadManager), "SaveModData")]
-    internal class SaveModDataPatch
+    internal class SaveLoadManagerSaveModDataPatch
     {
         static void Postfix()
         {
@@ -13,7 +13,7 @@ namespace SailwindRegatta
     }
 
     [HarmonyPatch(typeof(SaveLoadManager), "LoadModData")]
-    internal class LoadModDataPatch
+    internal class SaveLoadManagerLoadModDataPatch
     {
         static void Postfix()
         {

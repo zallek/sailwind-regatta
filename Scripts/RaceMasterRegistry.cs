@@ -9,11 +9,13 @@ namespace SailwindRegatta
     {
         public static readonly List<RaceMasterConfig> NPCs = new List<RaceMasterConfig>
         {
-            // Position is relative to the port transform — needs in-game tuning.
+            // position/eulerAngles are relative to the port transform — tune in-game as needed.
+            // avatar: index into Port.ports[] — determines which port's dude mesh is cloned.
             new RaceMasterConfig(
                 port:        CheckpointName.GoldRockCity,
-                position:    new Vector3(5f, 0f, -5f),
-                eulerAngles: new Vector3(0f, 180f, 0f)
+                position:    new Vector3(5f, -0.78f, -5f),
+                eulerAngles: new Vector3(0f, 30f, 0f),
+                avatar:      2
             ),
         };
     }

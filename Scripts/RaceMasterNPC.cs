@@ -1,3 +1,4 @@
+using PsychoticLab;
 using UnityEngine;
 
 namespace SailwindRegatta
@@ -7,7 +8,7 @@ namespace SailwindRegatta
     internal class RaceMasterNPC : MonoBehaviour
     {
         private Race _race;
-        private RaceMasterButton _button;
+        private RaceMasterUI _ui;
         private bool _playerNearby;
 
         internal void Init(Race race, RaceMasterConfig config)
@@ -16,71 +17,101 @@ namespace SailwindRegatta
             transform.localPosition = config.Position;
             transform.localEulerAngles = config.EulerAngles;
 
-            // Proximity trigger — large sphere so the HUD text appears before the player
-            // is right on top of the NPC. Lives on this GameObject so OnTriggerEnter/Exit fire here.
+            // Proximity trigger — fires OnTriggerEnter/Exit on this GameObject.
             var trigger = gameObject.AddComponent<SphereCollider>();
             trigger.isTrigger = true;
             trigger.radius = 3f;
 
-            // Capsule body: provides MeshRenderer (required by GoPointerButton) and
-            // CapsuleCollider (for GoPointer raycast hit detection).
-            var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            capsule.transform.SetParent(transform, worldPositionStays: false);
-            capsule.transform.localPosition = Vector3.zero;
-            capsule.transform.localScale = new Vector3(0.6f, 0.9f, 0.6f);
+            var body = BuildCharacter(config);
+            if (body == null)
+            {
+                Plugin.Log.LogWarning($"RaceMasterNPC: aborting init for race '{race.DisplayName}'. Check avatar index in RaceMasterRegistry.");
+                return;
+            }
 
-            _button = capsule.AddComponent<RaceMasterButton>();
-            _button.npc = this;
-            _button.description = "Race Master";
+            var button = body.AddComponent<RaceMasterButton>();
+            button.npc = this;
 
-            // Name label floating above the NPC's head.
-            var label = new GameObject("Label");
-            label.transform.SetParent(capsule.transform, worldPositionStays: false);
-            label.transform.localPosition = new Vector3(0f, 1.2f, 0f);
-            var tm = label.AddComponent<TextMesh>();
-            tm.text = "Race Master";
-            tm.alignment = TextAlignment.Center;
-            tm.anchor = TextAnchor.MiddleCenter;
-            tm.characterSize = 0.1f;
-            tm.fontSize = 50;
-
-            RefreshLookText();
+            var uiGO = new GameObject("RaceMasterUI");
+            uiGO.transform.SetParent(body.transform, worldPositionStays: false);
+            _ui = uiGO.AddComponent<RaceMasterUI>();
+            _ui.Init();
 
             Plugin.Log.LogInfo($"RaceMasterNPC built for race: {race.DisplayName}");
+        }
+
+        // Clones the CharacterCustomizer mesh from Port.ports[config.Avatar] and
+        // sets up all components needed for GoPointer interaction.
+        private GameObject BuildCharacter(RaceMasterConfig config)
+        {
+            if (config.Avatar < 0 || config.Avatar >= Port.ports.Length)
+            {
+                Plugin.Log.LogWarning($"RaceMasterNPC: avatar index {config.Avatar} is out of range (Port.ports.Length = {Port.ports.Length}).");
+                return null;
+            }
+
+            var dude = Port.ports[config.Avatar].GetDude();
+            if (dude == null)
+            {
+                Plugin.Log.LogWarning($"RaceMasterNPC: GetDude() returned null for port index {config.Avatar}.");
+                return null;
+            }
+
+            var customizer = dude.GetComponentInChildren<CharacterCustomizer>();
+            if (customizer == null)
+            {
+                Plugin.Log.LogWarning($"RaceMasterNPC: no CharacterCustomizer found on dude at port index {config.Avatar}.");
+                return null;
+            }
+
+            var go = Instantiate(customizer.gameObject, transform, false);
+            go.name = "Character";
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+
+            // GoPointer's raycast uses layer mask -604165 (excludes layers 2, 11-13, 16, 19).
+            // Force Default layer (0) so the raycast can hit this object.
+            go.layer = 0;
+
+            // Non-trigger CapsuleCollider for GoPointer raycast hit detection.
+            var col = go.AddComponent<CapsuleCollider>();
+            col.center = new Vector3(0f, 1f, 0f);
+            col.height = 2f;
+            col.radius = 0.3f;
+
+            // GoPointerButton requires a Renderer on the same GameObject.
+            // CharacterCustomizer only has SkinnedMeshRenderers on children, so add
+            // an empty MeshRenderer to the root (no mesh/material — renders nothing).
+            if (go.GetComponent<Renderer>() == null)
+                go.AddComponent<MeshRenderer>();
+
+            return go;
         }
 
         private void OnTriggerEnter(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _playerNearby = true;
-            RefreshLookText();
+            _ui?.Show();
         }
 
         private void OnTriggerExit(Collider other)
         {
             if (!other.CompareTag("Player")) return;
             _playerNearby = false;
+            _ui?.Hide();
         }
 
         private void Update()
         {
-            // Refresh every frame while the player is nearby so the text stays
-            // correct if race state changes while they stand next to the NPC.
-            if (_playerNearby)
-                RefreshLookText();
-        }
-
-        private void RefreshLookText()
-        {
-            if (_button == null) return;
-            _button.lookText = RaceManager.Instance?.ActiveRun == null
-                ? "start the race"
-                : "abort the race";
+            // Keep text in sync if race state changes while player is nearby.
+            if (_playerNearby) _ui?.Refresh();
         }
 
         internal void Activate()
         {
-            RefreshLookText();
+            UISoundPlayer.instance.PlayUISound(UISounds.buttonClick, 1f, 1.2f);
             if (RaceManager.Instance.ActiveRun == null)
                 RaceManager.Instance.StartRace(_race);
             else

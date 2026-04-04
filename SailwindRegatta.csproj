@@ -78,6 +78,7 @@
     <Compile Include="Scripts\Race.cs" />
     <Compile Include="Scripts\RaceManager.cs" />
     <Compile Include="Scripts\RaceMasterButton.cs" />
+    <Compile Include="Scripts\RaceMasterUI.cs" />
     <Compile Include="Scripts\RaceMasterConfig.cs" />
     <Compile Include="Scripts\RaceMasterNPC.cs" />
     <Compile Include="Scripts\RaceMasterRegistry.cs" />

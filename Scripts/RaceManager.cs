@@ -73,26 +73,40 @@ namespace SailwindRegatta
             Plugin.Log.LogInfo($"CheckpointArea injected on port: {port.GetPortName()}");
         }
 
+        // Called by the Port.Start() patch when any port initialises.
+        // Injects a RaceMasterNPC child for every registry entry matching this port.
+        internal void TryInjectRaceMasterNPC(Port port)
+        {
+            foreach (var config in RaceMasterRegistry.NPCs)
+            {
+                if (config.Port.ToPortString() != port.GetPortName()) continue;
+                if (port.GetComponentInChildren<RaceMasterNPC>() != null) continue;
+
+                var race = RaceRegistry.Races.Find(r => r.Checkpoints[0] == config.Port);
+                if (race == null) continue;
+
+                var go = new GameObject("RaceMasterNPC");
+                go.transform.SetParent(port.transform, worldPositionStays: false);
+                go.AddComponent<RaceMasterNPC>().Init(race, config);
+
+                Plugin.Log.LogInfo($"RaceMasterNPC injected on port: {port.GetPortName()}");
+            }
+        }
+
         // Called by CheckpointArea when the player enters a checkpoint zone.
+        // Race start is now handled exclusively by RaceMasterNPC — checkpoint zones
+        // only advance an already-active race.
         internal void OnPlayerEnteredCheckpoint(CheckpointName name)
         {
             if (!GameState.playing) return;
 
-            if (ActiveRun == null)
-            {
-                TryStartRace(name);
-            }
-            else
-            {
+            if (ActiveRun != null)
                 TryAdvanceCheckpoint(name);
-            }
         }
 
-        private void TryStartRace(CheckpointName name)
+        // Called by RaceMasterNPC when the player clicks the NPC to start a race.
+        internal void StartRace(Race race)
         {
-            var race = RaceRegistry.Races.Find(r => r.Checkpoints[0] == name);
-            if (race == null) return;
-
             var startedAt = DateTime.UtcNow;
             ActiveRun = new Run(race, GameState.day, startedAt);
 

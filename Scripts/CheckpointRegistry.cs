@@ -10,7 +10,7 @@ namespace SailwindRegatta
         public static readonly Dictionary<CheckpointName, Checkpoint> Checkpoints =
             new Dictionary<CheckpointName, Checkpoint>
             {
-                { CheckpointName.GoldRockCity, new Checkpoint(CheckpointName.GoldRockCity, radius: 200f, offset: new Vector3(100, 0, -20)) },
+                { CheckpointName.GoldRockCity, new Checkpoint(CheckpointName.GoldRockCity, radius: 100f, offset: new Vector3(100, 0, -20)) },
                 { CheckpointName.FortAestrin,  new Checkpoint(CheckpointName.FortAestrin) },
                 { CheckpointName.DragonCliffs, new Checkpoint(CheckpointName.DragonCliffs) },
             };

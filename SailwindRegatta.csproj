@@ -53,6 +53,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\System.dll</HintPath>
     </Reference>
@@ -74,6 +77,10 @@
     <Compile Include="Scripts\CheckpointRegistry.cs" />
     <Compile Include="Scripts\Race.cs" />
     <Compile Include="Scripts\RaceManager.cs" />
+    <Compile Include="Scripts\RaceMasterButton.cs" />
+    <Compile Include="Scripts\RaceMasterConfig.cs" />
+    <Compile Include="Scripts\RaceMasterNPC.cs" />
+    <Compile Include="Scripts\RaceMasterRegistry.cs" />
     <Compile Include="Scripts\RaceRegistry.cs" />
     <Compile Include="Scripts\Run.cs" />
     <Compile Include="Scripts\SaveManager.cs" />

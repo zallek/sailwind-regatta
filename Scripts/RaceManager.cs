@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -12,17 +11,9 @@ namespace SailwindRegatta
         // Set by SaveLoadPatches when a save is loaded.
         internal Run ActiveRun { get; set; }
 
-        // Checkpoints keyed by port string (for injection lookup), built from all races.
-        // When the same port appears in multiple checkpoints, last definition wins (one trigger per port).
-        private readonly Dictionary<string, Checkpoint> _checkpointsByPort = new Dictionary<string, Checkpoint>();
-
         private void Awake()
         {
             Instance = this;
-
-            foreach (var race in RaceRegistry.Races)
-                foreach (var checkpoint in race.Checkpoints)
-                    _checkpointsByPort[checkpoint.Name.ToPortString()] = checkpoint;
         }
 
         private void Update()
@@ -61,7 +52,16 @@ namespace SailwindRegatta
         // Injects a CheckpointArea child if this port is part of a race.
         internal void TryInjectCheckpointArea(Port port)
         {
-            if (!_checkpointsByPort.TryGetValue(port.GetPortName(), out var checkpoint)) return;
+            Checkpoint checkpoint = null;
+            foreach (var kv in CheckpointRegistry.Checkpoints)
+            {
+                if (kv.Key.ToPortString() == port.GetPortName())
+                {
+                    checkpoint = kv.Value;
+                    break;
+                }
+            }
+            if (checkpoint == null) return;
 
             // Avoid duplicates if the scene reloads (old components are destroyed with it).
             if (port.GetComponentInChildren<CheckpointArea>() != null) return;
@@ -90,7 +90,7 @@ namespace SailwindRegatta
 
         private void TryStartRace(CheckpointName name)
         {
-            var race = RaceRegistry.Races.Find(r => r.Checkpoints[0].Name == name);
+            var race = RaceRegistry.Races.Find(r => r.Checkpoints[0] == name);
             if (race == null) return;
 
             var startedAt = DateTime.UtcNow;

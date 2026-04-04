@@ -71,6 +71,7 @@
     <Compile Include="Scripts\Checkpoint.cs" />
     <Compile Include="Scripts\CheckpointArea.cs" />
     <Compile Include="Scripts\CheckpointName.cs" />
+    <Compile Include="Scripts\CheckpointRegistry.cs" />
     <Compile Include="Scripts\Race.cs" />
     <Compile Include="Scripts\RaceManager.cs" />
     <Compile Include="Scripts\RaceRegistry.cs" />

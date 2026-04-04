@@ -15,10 +15,11 @@ namespace SailwindRegatta
         {
             try
             {
+                bool dev = Plugin.DevMode.Value;
                 var body = JsonUtility.ToJson(new UpsertPlayerRpcRequest
                 {
-                    key  = ComputePlayerKey(user.SteamId),
-                    name = user.PersonaName
+                    key  = ComputePlayerKey(user.SteamId, dev),
+                    name = dev ? user.PersonaName + "-dev" : user.PersonaName
                 });
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/upsert_player", body);
@@ -155,11 +156,12 @@ namespace SailwindRegatta
             return req;
         }
 
-        private static string ComputePlayerKey(string steamId)
+        private static string ComputePlayerKey(string steamId, bool dev = false)
         {
+            string salt = dev ? Secrets.PlayerKeySaltDev : Secrets.PlayerKeySalt;
             using (var sha256 = SHA256.Create())
             {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(steamId + Secrets.PlayerKeySalt));
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(steamId + salt));
                 var sb = new StringBuilder(64);
                 foreach (byte b in bytes)
                     sb.Append(b.ToString("x2"));

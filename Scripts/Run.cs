@@ -24,7 +24,7 @@ namespace SailwindRegatta
         // Accumulated real-world play time in seconds. Excludes paused and closed-game time.
         public float ElapsedSeconds { get; set; }
 
-        public string NextPortName => Race.RouteCheckpoints[NextCheckpointIndex].PortName;
+        public CheckpointName NextCheckpointName => Race.RouteCheckpoints[NextCheckpointIndex].Name;
         public bool IsFinished => NextCheckpointIndex >= Race.RouteCheckpoints.Length;
 
         public Run(Race race, int startDay, DateTime startedAt)

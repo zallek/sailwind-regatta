@@ -68,10 +68,10 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Secrets.cs" />
     <Compile Include="Scripts\BoatTypeHelper.cs" />
+    <Compile Include="Scripts\Checkpoint.cs" />
     <Compile Include="Scripts\CheckpointArea.cs" />
-    <Compile Include="Scripts\PortName.cs" />
+    <Compile Include="Scripts\CheckpointName.cs" />
     <Compile Include="Scripts\Race.cs" />
-    <Compile Include="Scripts\RaceCheckpoint.cs" />
     <Compile Include="Scripts\RaceManager.cs" />
     <Compile Include="Scripts\RaceRegistry.cs" />
     <Compile Include="Scripts\Run.cs" />

@@ -11,10 +11,10 @@ namespace SailwindRegatta
                 displayName: "The Capital Circuit",
                 checkpoints: new[]
                 {
-                    new RaceCheckpoint(PortName.GoldRockCity),
-                    new RaceCheckpoint(PortName.FortAestrin),
-                    new RaceCheckpoint(PortName.DragonCliffs),
-                    new RaceCheckpoint(PortName.GoldRockCity),
+                    new Checkpoint(CheckpointName.GoldRockCity),
+                    new Checkpoint(CheckpointName.FortAestrin),
+                    new Checkpoint(CheckpointName.DragonCliffs),
+                    new Checkpoint(CheckpointName.GoldRockCity),
                 }
             )
         };

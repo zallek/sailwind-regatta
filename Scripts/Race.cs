@@ -8,15 +8,13 @@ namespace SailwindRegatta
         public string DisplayName { get; }
 
         // Full ordered route: [startCheckpoint, checkpoint1, ..., finishCheckpoint]
-        // For a circuit race the first and last entry target the same port name.
-        public RaceCheckpoint[] Checkpoints { get; }
-
-        public string StartPortName => Checkpoints[0].PortName;
+        // For a circuit race the first and last entry target the same checkpoint name.
+        public Checkpoint[] Checkpoints { get; }
 
         // Everything after the start: intermediate checkpoints + finish destination.
-        public RaceCheckpoint[] RouteCheckpoints => Checkpoints.Skip(1).ToArray();
+        public Checkpoint[] RouteCheckpoints => Checkpoints.Skip(1).ToArray();
 
-        public Race(int id, string displayName, RaceCheckpoint[] checkpoints)
+        public Race(int id, string displayName, Checkpoint[] checkpoints)
         {
             Id = id;
             DisplayName = displayName;

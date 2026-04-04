@@ -12,9 +12,9 @@ namespace SailwindRegatta
         // Set by SaveLoadPatches when a save is loaded.
         internal Run ActiveRun { get; set; }
 
-        // Checkpoints keyed by port name, built from all unique port names across all races.
-        // When a port name appears in multiple checkpoints, the last definition wins (same port = one trigger).
-        private readonly Dictionary<string, RaceCheckpoint> _checkpointsByPort = new Dictionary<string, RaceCheckpoint>();
+        // Checkpoints keyed by port string (for injection lookup), built from all races.
+        // When the same port appears in multiple checkpoints, last definition wins (one trigger per port).
+        private readonly Dictionary<string, Checkpoint> _checkpointsByPort = new Dictionary<string, Checkpoint>();
 
         private void Awake()
         {
@@ -22,7 +22,7 @@ namespace SailwindRegatta
 
             foreach (var race in RaceRegistry.Races)
                 foreach (var checkpoint in race.Checkpoints)
-                    _checkpointsByPort[checkpoint.PortName] = checkpoint;
+                    _checkpointsByPort[checkpoint.Name.ToPortString()] = checkpoint;
         }
 
         private void Update()
@@ -68,31 +68,29 @@ namespace SailwindRegatta
 
             var child = new GameObject("CheckpointArea");
             child.transform.SetParent(port.transform, worldPositionStays: false);
-            child.AddComponent<CheckpointArea>().Init(checkpoint, port);
+            child.AddComponent<CheckpointArea>().Init(checkpoint);
 
             Plugin.Log.LogInfo($"CheckpointArea injected on port: {port.GetPortName()}");
         }
 
-        // Called by CheckpointArea when the player enters a port zone.
-        internal void OnPlayerEnteredPort(Port port)
+        // Called by CheckpointArea when the player enters a checkpoint zone.
+        internal void OnPlayerEnteredCheckpoint(CheckpointName name)
         {
             if (!GameState.playing) return;
 
-            var portName = port.GetPortName();
-
             if (ActiveRun == null)
             {
-                TryStartRace(portName);
+                TryStartRace(name);
             }
             else
             {
-                TryAdvanceCheckpoint(portName);
+                TryAdvanceCheckpoint(name);
             }
         }
 
-        private void TryStartRace(string portName)
+        private void TryStartRace(CheckpointName name)
         {
-            var race = RaceRegistry.Races.Find(r => r.StartPortName == portName);
+            var race = RaceRegistry.Races.Find(r => r.Checkpoints[0].Name == name);
             if (race == null) return;
 
             var startedAt = DateTime.UtcNow;
@@ -100,7 +98,7 @@ namespace SailwindRegatta
 
             Plugin.Log.LogInfo($"Race started: {race.DisplayName}");
             NotificationUi.instance.ShowNotification(
-                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRun.NextPortName}", 15f);
+                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRun.NextCheckpointName.ToPortString()}", 15f);
 
             if (Plugin.Session != null)
                 _ = SaveRunStartedAsync(race.Id, startedAt);
@@ -117,9 +115,9 @@ namespace SailwindRegatta
             }
         }
 
-        private void TryAdvanceCheckpoint(string portName)
+        private void TryAdvanceCheckpoint(CheckpointName name)
         {
-            if (portName != ActiveRun.NextPortName) return;
+            if (name != ActiveRun.NextCheckpointName) return;
 
             ActiveRun.NextCheckpointIndex++;
 
@@ -131,9 +129,9 @@ namespace SailwindRegatta
             {
                 int reached = ActiveRun.NextCheckpointIndex;
                 int total = ActiveRun.Race.RouteCheckpoints.Length - 1;
-                Plugin.Log.LogInfo($"Checkpoint {reached}/{total}: {portName}");
+                Plugin.Log.LogInfo($"Checkpoint {reached}/{total}: {name}");
                 NotificationUi.instance.ShowNotification(
-                    $"Checkpoint {reached} / {total}\n{portName}\nHead to: {ActiveRun.NextPortName}", 15f);
+                    $"Checkpoint {reached} / {total}\n{name.ToPortString()}\nHead to: {ActiveRun.NextCheckpointName.ToPortString()}", 15f);
             }
         }
 

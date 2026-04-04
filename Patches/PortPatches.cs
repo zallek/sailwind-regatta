@@ -7,7 +7,7 @@ namespace SailwindRegatta
     {
         static void Postfix(Port __instance)
         {
-            RaceManager.Instance?.TryInjectTrigger(__instance);
+            RaceManager.Instance?.TryInjectCheckpointArea(__instance);
         }
     }
 }

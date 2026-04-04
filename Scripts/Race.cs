@@ -7,55 +7,20 @@ namespace SailwindRegatta
         public int Id { get; }
         public string DisplayName { get; }
 
-        // Full ordered route: [startPort, checkpoint1, ..., finishPort]
-        // For a circuit race the first and last entry are the same port name.
-        /*
-        Aestra Abbey
-        Al'Ankh Academy
-        Al'Nilem
-        Albacore Town
-        Alchemist's Island
-        Chronos
-        Crab Beach
-        Dead Cove
-        Dragon Cliffs
-        Eastwind
-        Fey Valley
-        Fire Fish Town
-        Firefly Grotto
-        Fort Aestrin
-        Gold Rock City
-        Happy Bay
-        Kicia Bay
-        Mirage Mountain
-        Mount Malefic
-        Neverdin
-        New Port
-        Oasis
-        Old Ankh Town
-        On'na
-        Saffron Island
-        Sage Hills
-        Sanctuary
-        Sen'na
-        Serpent Isle
-        Siren Song
-        Sunspire
-        Test Port
-        Turtle Island
-        */
-        public string[] PortNames { get; }
+        // Full ordered route: [startCheckpoint, checkpoint1, ..., finishCheckpoint]
+        // For a circuit race the first and last entry target the same port name.
+        public RaceCheckpoint[] Checkpoints { get; }
 
-        public string StartPortName => PortNames[0];
+        public string StartPortName => Checkpoints[0].PortName;
 
         // Everything after the start: intermediate checkpoints + finish destination.
-        public string[] CheckpointPortNames => PortNames.Skip(1).ToArray();
+        public RaceCheckpoint[] RouteCheckpoints => Checkpoints.Skip(1).ToArray();
 
-        public Race(int id, string displayName, string[] portNames)
+        public Race(int id, string displayName, RaceCheckpoint[] checkpoints)
         {
             Id = id;
             DisplayName = displayName;
-            PortNames = portNames;
+            Checkpoints = checkpoints;
         }
     }
 }

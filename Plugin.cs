@@ -2,6 +2,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 
@@ -18,6 +19,7 @@ namespace SailwindRegatta
         internal static ManualLogSource Log { get; private set; }
         internal static SteamUser LocalPlayer { get; private set; }
         internal static PlayerSession Session { get; set; }
+        internal static ConfigEntry<bool> ShowCheckpointZones { get; private set; }
 
         private void Awake()
         {
@@ -28,6 +30,9 @@ namespace SailwindRegatta
             }
             Instance = this;
             Log = Logger;
+
+            ShowCheckpointZones = Config.Bind("Dev", "ShowCheckpointZones", false,
+                "Render checkpoint detection zones as semi-transparent red spheres.");
 
             // Required for HTTPS on Mono/.NET 4.8 in Unity.
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;

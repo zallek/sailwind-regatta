@@ -6,7 +6,7 @@ namespace SailwindRegatta
     {
         public Race Race { get; }
 
-        // Index into Race.CheckpointPortNames — the port the player must visit next.
+        // Index into Race.RouteCheckpoints — the checkpoint the player must visit next.
         public int NextCheckpointIndex { get; set; }
 
         public int StartDay { get; }
@@ -24,8 +24,8 @@ namespace SailwindRegatta
         // Accumulated real-world play time in seconds. Excludes paused and closed-game time.
         public float ElapsedSeconds { get; set; }
 
-        public string NextPortName => Race.CheckpointPortNames[NextCheckpointIndex];
-        public bool IsFinished => NextCheckpointIndex >= Race.CheckpointPortNames.Length;
+        public string NextPortName => Race.RouteCheckpoints[NextCheckpointIndex].PortName;
+        public bool IsFinished => NextCheckpointIndex >= Race.RouteCheckpoints.Length;
 
         public Run(Race race, int startDay, DateTime startedAt)
         {

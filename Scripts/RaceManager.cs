@@ -12,17 +12,17 @@ namespace SailwindRegatta
         // Set by SaveLoadPatches when a save is loaded.
         internal Run ActiveRun { get; set; }
 
-        // Ports that need a trigger injected, keyed by port name.
-        // Built from all unique port names across all races.
-        private readonly HashSet<string> _racePortNames = new HashSet<string>();
+        // Checkpoints keyed by port name, built from all unique port names across all races.
+        // When a port name appears in multiple checkpoints, the last definition wins (same port = one trigger).
+        private readonly Dictionary<string, RaceCheckpoint> _checkpointsByPort = new Dictionary<string, RaceCheckpoint>();
 
         private void Awake()
         {
             Instance = this;
 
             foreach (var race in RaceRegistry.Races)
-                foreach (var name in race.PortNames)
-                    _racePortNames.Add(name);
+                foreach (var checkpoint in race.Checkpoints)
+                    _checkpointsByPort[checkpoint.PortName] = checkpoint;
         }
 
         private void Update()
@@ -57,28 +57,23 @@ namespace SailwindRegatta
                 AbortRace("You switched to a different boat.");
         }
 
-
-
         // Called by the Port.Start() patch when any port initialises.
-        // Injects a trigger collider if this port is part of a race.
-        internal void TryInjectTrigger(Port port)
+        // Injects a CheckpointArea child if this port is part of a race.
+        internal void TryInjectCheckpointArea(Port port)
         {
-            if (!_racePortNames.Contains(port.GetPortName())) return;
+            if (!_checkpointsByPort.TryGetValue(port.GetPortName(), out var checkpoint)) return;
 
             // Avoid duplicates if the scene reloads (old components are destroyed with it).
-            if (port.GetComponent<PortArrivalTrigger>() != null) return;
+            if (port.GetComponentInChildren<CheckpointArea>() != null) return;
 
-            var col = port.gameObject.AddComponent<SphereCollider>();
-            col.isTrigger = true;
-            col.radius = 800f;
+            var child = new GameObject("CheckpointArea");
+            child.transform.SetParent(port.transform, worldPositionStays: false);
+            child.AddComponent<CheckpointArea>().Init(checkpoint, port);
 
-            var trigger = port.gameObject.AddComponent<PortArrivalTrigger>();
-            trigger.Port = port;
-
-            Plugin.Log.LogInfo($"Trigger injected on port: {port.GetPortName()}");
+            Plugin.Log.LogInfo($"CheckpointArea injected on port: {port.GetPortName()}");
         }
 
-        // Called by PortArrivalTrigger when the player enters a port zone.
+        // Called by CheckpointArea when the player enters a port zone.
         internal void OnPlayerEnteredPort(Port port)
         {
             if (!GameState.playing) return;
@@ -135,7 +130,7 @@ namespace SailwindRegatta
             else
             {
                 int reached = ActiveRun.NextCheckpointIndex;
-                int total = ActiveRun.Race.CheckpointPortNames.Length - 1;
+                int total = ActiveRun.Race.RouteCheckpoints.Length - 1;
                 Plugin.Log.LogInfo($"Checkpoint {reached}/{total}: {portName}");
                 NotificationUi.instance.ShowNotification(
                     $"Checkpoint {reached} / {total}\n{portName}\nHead to: {ActiveRun.NextPortName}", 15f);

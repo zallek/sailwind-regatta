@@ -4,33 +4,31 @@ using UnityEngine;
 namespace SailwindRegatta
 {
     // Injected at runtime as a child of a Port GameObject.
-    // Owns the trigger collider, player detection, and optional debug visual.
+    // Position and size are driven by the standard Transform (localPosition = offset, localScale = radius * 2).
+    // The SphereCollider (radius 0.5) and debug shells inherit scale automatically.
     internal class CheckpointArea : MonoBehaviour
     {
-        public float Radius;
-        public Vector3 Offset;
-
         private CheckpointName _name;
-        private Coroutine _distanceLogCoroutine;
 
         internal void Init(Checkpoint checkpoint)
         {
             _name = checkpoint.Name;
-            Radius = checkpoint.Radius;
-            Offset = checkpoint.Offset;
-            transform.localPosition = Offset;
+            transform.localPosition = checkpoint.Offset;
+            transform.localScale = Vector3.one * checkpoint.Radius * 2f;
 
+            // radius = 0.5 on a unit sphere; world radius = 0.5 * localScale = checkpoint.Radius.
             var col = gameObject.AddComponent<SphereCollider>();
             col.isTrigger = true;
-            col.radius = Radius;
+            col.radius = 0.5f;
 
             if (Plugin.ShowCheckpointZones.Value)
-                SpawnDebugSphere();
+                SpawnDebugSpheres();
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player")) {
+            if (other.CompareTag("Player"))
+            {
                 Plugin.Log.LogDebug($"Player entered checkpoint: {_name}");
                 RaceManager.Instance?.OnPlayerEnteredCheckpoint(_name);
             }
@@ -38,19 +36,18 @@ namespace SailwindRegatta
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player")) {
+            if (other.CompareTag("Player"))
+            {
                 Plugin.Log.LogDebug($"Player exited checkpoint: {_name}");
             }
         }
 
-        private void SpawnDebugSphere()
+        private void SpawnDebugSpheres()
         {
             var mat = new Material(Shader.Find("Sprites/Default"));
             mat.color = new Color(1f, 0f, 0f, 0.3f);
 
-            // Outer shell: standard winding, visible from outside.
             SpawnShell(mat, invertNormals: false);
-            // Inner shell: inverted normals + winding, visible from inside.
             SpawnShell(mat, invertNormals: true);
         }
 
@@ -59,12 +56,10 @@ namespace SailwindRegatta
             var sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Destroy(sphere.GetComponent<SphereCollider>());
             sphere.transform.SetParent(transform, worldPositionStays: false);
-            sphere.transform.localScale = Vector3.one * Radius * 2f;
             sphere.GetComponent<MeshRenderer>().material = mat;
 
             if (!invertNormals) return;
 
-            // filter.mesh creates a per-instance copy so we don't modify the shared primitive mesh.
             var mesh = sphere.GetComponent<MeshFilter>().mesh;
 
             var normals = mesh.normals;

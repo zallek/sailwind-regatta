@@ -11,18 +11,18 @@ namespace SailwindRegatta
         private RaceMasterUI _ui;
         private bool _playerNearby;
 
-        internal void Init(Race race, RaceMasterConfig config)
+        internal void Init(Race race, RaceMaster raceMaster)
         {
             _race = race;
-            transform.localPosition = config.Position;
-            transform.localEulerAngles = config.EulerAngles;
+            transform.localPosition = raceMaster.Position;
+            transform.localEulerAngles = raceMaster.EulerAngles;
 
             // Proximity trigger — fires OnTriggerEnter/Exit on this GameObject.
             var trigger = gameObject.AddComponent<SphereCollider>();
             trigger.isTrigger = true;
             trigger.radius = 3f;
 
-            var body = BuildCharacter(config);
+            var body = BuildCharacter(raceMaster);
             if (body == null)
             {
                 Plugin.Log.LogWarning($"RaceMasterNPC: aborting init for race '{race.DisplayName}'. Check avatar index in RaceMasterRegistry.");
@@ -42,25 +42,25 @@ namespace SailwindRegatta
 
         // Clones the CharacterCustomizer mesh from Port.ports[config.Avatar] and
         // sets up all components needed for GoPointer interaction.
-        private GameObject BuildCharacter(RaceMasterConfig config)
+        private GameObject BuildCharacter(RaceMaster raceMaster)
         {
-            if (config.Avatar < 0 || config.Avatar >= Port.ports.Length)
+            if (raceMaster.Avatar < 0 || raceMaster.Avatar >= Port.ports.Length)
             {
-                Plugin.Log.LogWarning($"RaceMasterNPC: avatar index {config.Avatar} is out of range (Port.ports.Length = {Port.ports.Length}).");
+                Plugin.Log.LogWarning($"RaceMasterNPC: avatar index {raceMaster.Avatar} is out of range (Port.ports.Length = {Port.ports.Length}).");
                 return null;
             }
 
-            var dude = Port.ports[config.Avatar].GetDude();
+            var dude = Port.ports[raceMaster.Avatar].GetDude();
             if (dude == null)
             {
-                Plugin.Log.LogWarning($"RaceMasterNPC: GetDude() returned null for port index {config.Avatar}.");
+                Plugin.Log.LogWarning($"RaceMasterNPC: GetDude() returned null for port index {raceMaster.Avatar}.");
                 return null;
             }
 
             var customizer = dude.GetComponentInChildren<CharacterCustomizer>();
             if (customizer == null)
             {
-                Plugin.Log.LogWarning($"RaceMasterNPC: no CharacterCustomizer found on dude at port index {config.Avatar}.");
+                Plugin.Log.LogWarning($"RaceMasterNPC: no CharacterCustomizer found on dude at port index {raceMaster.Avatar}.");
                 return null;
             }
 

@@ -8,11 +8,11 @@ namespace SailwindRegatta
     // The SphereCollider (radius 0.5) and debug shells inherit scale automatically.
     internal class CheckpointArea : MonoBehaviour
     {
-        private CheckpointName _name;
+        private Checkpoint _checkpoint;
 
         internal void Init(Checkpoint checkpoint)
         {
-            _name = checkpoint.Name;
+            _checkpoint = checkpoint;
             transform.localPosition = checkpoint.Offset;
             transform.localScale = Vector3.one * checkpoint.Radius * 2f;
 
@@ -29,16 +29,7 @@ namespace SailwindRegatta
         {
             if (other.CompareTag("Player"))
             {
-                Plugin.Log.LogDebug($"Player entered checkpoint: {_name}");
-                RaceManager.Instance?.OnPlayerEnteredCheckpoint(_name);
-            }
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.CompareTag("Player"))
-            {
-                Plugin.Log.LogDebug($"Player exited checkpoint: {_name}");
+                RaceManager.Instance?.OnPlayerEnteredCheckpoint(_checkpoint);
             }
         }
 

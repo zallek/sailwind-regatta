@@ -38,7 +38,7 @@ namespace SailwindRegatta
 
     internal static class CheckpointNameExtensions
     {
-        internal static string ToPortString(this CheckpointName name)
+        internal static string ToDisplayName(this CheckpointName name)
         {
             switch (name)
             {

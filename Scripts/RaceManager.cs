@@ -24,7 +24,7 @@ namespace SailwindRegatta
 
         internal void OnSteeringWheelActivated(Rudder rudder)
         {
-            int? boatTypeId = BoatTypeHelper.TryGetBoatTypeIdFromRudder(rudder);
+            int? boatTypeId = BoatTypeUtils.TryGetBoatTypeIdFromRudder(rudder);
             if (boatTypeId != null)
                 Plugin.Log.LogInfo($"Steering wheel activated — boat type id: {boatTypeId.Value}");
             else
@@ -53,11 +53,11 @@ namespace SailwindRegatta
         internal void TryInjectCheckpointArea(Port port)
         {
             Checkpoint checkpoint = null;
-            foreach (var kv in CheckpointRegistry.Checkpoints)
+            foreach (var c in CheckpointRegistry.Checkpoints)
             {
-                if (kv.Key.ToPortString() == port.GetPortName())
+                if (c.PortName.ToPortString() == port.GetPortName())
                 {
-                    checkpoint = kv.Value;
+                    checkpoint = c;
                     break;
                 }
             }
@@ -77,17 +77,17 @@ namespace SailwindRegatta
         // Injects a RaceMasterNPC child for every registry entry matching this port.
         internal void TryInjectRaceMasterNPC(Port port)
         {
-            foreach (var config in RaceMasterRegistry.NPCs)
+            foreach (var raceMaster in RaceMasterRegistry.RaceMasters)
             {
-                if (config.Port.ToPortString() != port.GetPortName()) continue;
+                if (raceMaster.PortName.ToPortString() != port.GetPortName()) continue;
                 if (port.GetComponentInChildren<RaceMasterNPC>() != null) continue;
 
-                var race = RaceRegistry.Races.Find(r => r.Checkpoints[0] == config.Port);
+                var race = RaceRegistry.Races.Find(r => r.Id == raceMaster.RaceId);
                 if (race == null) continue;
 
                 var go = new GameObject("RaceMasterNPC");
                 go.transform.SetParent(port.transform, worldPositionStays: false);
-                go.AddComponent<RaceMasterNPC>().Init(race, config);
+                go.AddComponent<RaceMasterNPC>().Init(race, raceMaster);
 
                 Plugin.Log.LogInfo($"RaceMasterNPC injected on port: {port.GetPortName()}");
             }
@@ -96,12 +96,12 @@ namespace SailwindRegatta
         // Called by CheckpointArea when the player enters a checkpoint zone.
         // Race start is now handled exclusively by RaceMasterNPC — checkpoint zones
         // only advance an already-active race.
-        internal void OnPlayerEnteredCheckpoint(CheckpointName name)
+        internal void OnPlayerEnteredCheckpoint(Checkpoint checkpoint)
         {
             if (!GameState.playing) return;
 
             if (ActiveRun != null)
-                TryAdvanceCheckpoint(name);
+                TryAdvanceCheckpoint(checkpoint);
         }
 
         // Called by RaceMasterNPC when the player clicks the NPC to start a race.
@@ -112,7 +112,7 @@ namespace SailwindRegatta
 
             Plugin.Log.LogInfo($"Race started: {race.DisplayName}");
             NotificationUi.instance.ShowNotification(
-                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRun.NextCheckpointName.ToPortString()}", 15f);
+                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRun.NextCheckpointName.ToDisplayName()}", 15f);
 
             if (Plugin.Session != null)
                 _ = SaveRunStartedAsync(race.Id, startedAt);
@@ -129,9 +129,9 @@ namespace SailwindRegatta
             }
         }
 
-        private void TryAdvanceCheckpoint(CheckpointName name)
+        private void TryAdvanceCheckpoint(Checkpoint checkpoint)
         {
-            if (name != ActiveRun.NextCheckpointName) return;
+            if (checkpoint.Name != ActiveRun.NextCheckpointName) return;
 
             ActiveRun.NextCheckpointIndex++;
 
@@ -145,7 +145,7 @@ namespace SailwindRegatta
                 int total = ActiveRun.Race.RouteCheckpoints.Length - 1;
                 Plugin.Log.LogInfo($"Checkpoint {reached}/{total}: {name}");
                 NotificationUi.instance.ShowNotification(
-                    $"Checkpoint {reached} / {total}\n{name.ToPortString()}\nHead to: {ActiveRun.NextCheckpointName.ToPortString()}", 15f);
+                    $"Checkpoint {reached} / {total}\n{checkpoint.Name.ToDisplayName()}\nHead to: {ActiveRun.NextCheckpointName.ToDisplayName()}", 15f);
             }
         }
 

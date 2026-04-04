@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace SailwindRegatta
 {
-    internal static class BoatTypeHelper
+    internal static class BoatTypeUtils
     {
         internal static int? TryGetBoatTypeIdFromRudder(Rudder rudder)
         {

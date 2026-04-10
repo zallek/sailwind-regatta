@@ -88,7 +88,7 @@ namespace SailwindRegatta
         }
 
         // Calls finish_run RPC. Run UUID acts as proof of ownership; trigger still enforces immutability.
-        internal static async Task FinishRunAsync(string runId, DateTime finishedAt, int durationSeconds, int? boatTypeId)
+        internal static async Task<bool> FinishRunAsync(string runId, DateTime finishedAt, int durationSeconds, int? boatTypeId)
         {
             try
             {
@@ -114,14 +114,16 @@ namespace SailwindRegatta
                     string raw = await response.Content.ReadAsStringAsync();
                     Plugin.Log.LogError($"Supabase finish_run failed ({(int)response.StatusCode}): {raw}");
                 }
+                return true;
             }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"Supabase FinishRunAsync exception: {ex.Message}");
+                return false;
             }
         }
 
-        internal static async Task AbortRunAsync(string runId, DateTime abortedAt)
+        internal static async Task<bool> AbortRunAsync(string runId, DateTime abortedAt)
         {
             try
             {
@@ -137,11 +139,14 @@ namespace SailwindRegatta
                 {
                     string raw = await response.Content.ReadAsStringAsync();
                     Plugin.Log.LogError($"Supabase abort_run failed ({(int)response.StatusCode}): {raw}");
+                    return false;
                 }
+                return true;
             }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"Supabase AbortRunAsync exception: {ex.Message}");
+                return false;
             }
         }
 

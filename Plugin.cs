@@ -17,7 +17,6 @@ namespace SailwindRegatta
 
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
-        internal static SteamUser LocalPlayer { get; private set; }
         internal static PlayerSession Session { get; set; }
         internal static ConfigEntry<bool> ShowCheckpointZones { get; private set; }
         internal static ConfigEntry<bool> DevMode { get; private set; }
@@ -44,24 +43,27 @@ namespace SailwindRegatta
 
             gameObject.AddComponent<RaceManager>();
 
-            LocalPlayer = SteamUtils.GetCurrentUser();
-            if (LocalPlayer != null)
-            {
-                _ = InitSessionAsync();
-            }
-            else
-            {
-                Log.LogWarning("Could not retrieve Steam user. Leaderboard disabled.");
-            }
+            _ = InitOnlineSessionAsync();
 
             Log.LogInfo($"{PLUGIN_NAME} v{PLUGIN_VERSION} loaded.");
         }
 
-        private static async Task InitSessionAsync()
+        private static async Task InitOnlineSessionAsync()
         {
-            await SupabaseClient.InitPlayerAsync(LocalPlayer);
-            if (Session == null)
-                Log.LogWarning("Supabase player init failed. Leaderboard disabled.");
+            var steamUser = SteamUtils.GetCurrentUser();
+            if (steamUser == null) {
+                Log.LogWarning("Could not retrieve Steam user. Online mode disabled.");
+                return;
+            }
+
+            var playerUuid = await SupabaseClient.UpsertPlayerAsync(steamUser);
+            if (playerUuid == null) {
+                Log.LogWarning("Could not create online player. Online mode disabled.");
+                return;
+            }
+        
+            Session = new PlayerSession(playerUuid);
+            Log.LogInfo($"Online session initialized. PlayerUUID: {Session.PlayerUuid}");
         }
     }
 }

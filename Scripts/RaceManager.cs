@@ -24,22 +24,18 @@ namespace SailwindRegatta
 
         internal void OnSteeringWheelActivated(Rudder rudder)
         {
-            int? boatTypeId = BoatTypeUtils.TryGetBoatTypeIdFromRudder(rudder);
-            if (boatTypeId != null)
-                Plugin.Log.LogInfo($"Steering wheel activated — boat type id: {boatTypeId.Value}");
-            else
-                Plugin.Log.LogWarning("Steering wheel activated — could not resolve boat type id for this rudder.");
-
             if (ActiveRun == null)
                 return;
-
-            if (boatTypeId == null)
+            
+            int? boatTypeId = BoatTypeUtils.TryGetBoatTypeIdFromRudder(rudder);
+            if (boatTypeId == null) {
+                Plugin.Log.LogError("Could not resolve boat type id for this rudder.");
                 return;
+            }
 
             if (ActiveRun.BoatTypeId == null)
             {
                 ActiveRun.BoatTypeId = boatTypeId;
-
                 Plugin.Log.LogInfo($"Run locked to boat type id {boatTypeId.Value}");
                 return;
             }
@@ -70,7 +66,7 @@ namespace SailwindRegatta
             child.transform.SetParent(port.transform, worldPositionStays: false);
             child.AddComponent<CheckpointArea>().Init(checkpoint);
 
-            Plugin.Log.LogInfo($"CheckpointArea injected on port: {port.GetPortName()}");
+            Plugin.Log.LogDebug($"CheckpointArea injected on port: {port.GetPortName()}");
         }
 
         // Called by the Port.Start() patch when any port initialises.
@@ -89,7 +85,7 @@ namespace SailwindRegatta
                 go.transform.SetParent(port.transform, worldPositionStays: false);
                 go.AddComponent<RaceMasterNPC>().Init(race, raceMaster);
 
-                Plugin.Log.LogInfo($"RaceMasterNPC injected on port: {port.GetPortName()}");
+                Plugin.Log.LogDebug($"RaceMasterNPC injected on port: {port.GetPortName()}");
             }
         }
 
@@ -110,9 +106,10 @@ namespace SailwindRegatta
             var startedAt = DateTime.UtcNow;
             ActiveRun = new Run(race, GameState.day, startedAt);
 
-            Plugin.Log.LogInfo($"Race started: {race.DisplayName}");
-            NotificationUi.instance.ShowNotification(
-                $"{race.DisplayName}\nRace started!\nHead to: {ActiveRun.NextCheckpointName.ToDisplayName()}", 15f);
+            string raceName = ActiveRun.Race.DisplayName;
+            string nextCheckpointName = ActiveRun.NextCheckpointName.ToDisplayName();
+            Plugin.Log.LogInfo($"Race started: {raceName}");
+            NotificationUi.instance.ShowNotification($"{raceName}\nRace started!\nHead to: {nextCheckpointName}", 15f);
 
             if (Plugin.Session != null)
                 _ = SaveRunStartedAsync(race.Id, startedAt);
@@ -124,8 +121,7 @@ namespace SailwindRegatta
             if (id != null && ActiveRun != null)
             {
                 ActiveRun.Id = id;
-
-                Plugin.Log.LogInfo($"Run started on Supabase. Run id: {id}");
+                Plugin.Log.LogDebug($"Run started on Supabase. Run id: {id}");
             }
         }
 
@@ -141,25 +137,25 @@ namespace SailwindRegatta
             }
             else
             {
+                string raceName = ActiveRun.Race.DisplayName;
+                string nextCheckpointName = ActiveRun.NextCheckpointName.ToDisplayName();
                 int reached = ActiveRun.NextCheckpointIndex;
                 int total = ActiveRun.Race.RouteCheckpoints.Length - 1;
-                Plugin.Log.LogInfo($"Checkpoint {reached}/{total}: {name}");
-                NotificationUi.instance.ShowNotification(
-                    $"Checkpoint {reached} / {total}\n{checkpoint.Name.ToDisplayName()}\nHead to: {ActiveRun.NextCheckpointName.ToDisplayName()}", 15f);
+                Plugin.Log.LogInfo($"Race checkpoint: {raceName} - {reached}/{total}");
+                NotificationUi.instance.ShowNotification($"{raceName}\nCheckpoint {reached} / {total}\nHead to: {nextCheckpointName}", 15f);
             }
         }
 
         private void FinishRace()
         {
-            string raceName   = ActiveRun.Race.DisplayName;
-            string runId      = ActiveRun.Id;
-            int?   boatTypeId = ActiveRun.BoatTypeId;
-            var    finishedAt = DateTime.UtcNow;
-            int    duration   = (int)ActiveRun.ElapsedSeconds;
+            string raceName = ActiveRun.Race.DisplayName;
+            string runId = ActiveRun.Id;
+            int? boatTypeId = ActiveRun.BoatTypeId;
+            var finishedAt = DateTime.UtcNow;
+            int duration = (int)ActiveRun.ElapsedSeconds;
 
-            Plugin.Log.LogInfo($"Race finished: {raceName} in {duration}s");
-            NotificationUi.instance.ShowNotification(
-                $"{raceName}\nFinished in {duration}s!", 15f);
+            Plugin.Log.LogInfo($"Race finished: {raceName}");
+            NotificationUi.instance.ShowNotification($"{raceName}\nRace finished in {duration}s!", 15f);
 
             ActiveRun = null;
 
@@ -170,7 +166,7 @@ namespace SailwindRegatta
         private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration, int? boatTypeId)
         {
             await SupabaseClient.FinishRunAsync(runId, finishedAt, duration, boatTypeId);
-            Plugin.Log.LogInfo($"Run finished on Supabase. Run id: {runId}");
+            Plugin.Log.LogDebug($"Run finished on Supabase. Run id: {runId}");
         }
 
         internal void AbortRace(string reason)
@@ -178,11 +174,11 @@ namespace SailwindRegatta
             if (ActiveRun == null)
                 return;
 
-            string runId     = ActiveRun.Id;
-            var    abortedAt = DateTime.UtcNow;
-
-            Plugin.Log.LogInfo($"Race aborted: {reason}");
-            NotificationUi.instance.ShowNotification($"Race aborted\n{reason}", 15f);
+            string runId = ActiveRun.Id;
+            var abortedAt = DateTime.UtcNow;
+            string raceName = ActiveRun.Race.DisplayName;
+            Plugin.Log.LogInfo($"Race aborted: {raceName} - {reason}");
+            NotificationUi.instance.ShowNotification($"{raceName}\nRace aborted\n{reason}", 15f);
             ActiveRun = null;
 
             if (Plugin.Session != null && runId != null)
@@ -192,7 +188,7 @@ namespace SailwindRegatta
         private async Task SaveRunAbortedAsync(string runId, DateTime abortedAt)
         {
             await SupabaseClient.AbortRunAsync(runId, abortedAt);
-            Plugin.Log.LogInfo($"Run aborted on Supabase. Run id: {runId}");
+            Plugin.Log.LogDebug($"Run aborted on Supabase. Run id: {runId}");
         }
     }
 }

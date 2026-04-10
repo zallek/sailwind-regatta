@@ -11,7 +11,7 @@ namespace SailwindRegatta
     {
         private static readonly HttpClient _http = new HttpClient();
 
-        internal static async Task InitPlayerAsync(SteamUser user)
+        internal static async Task<string> UpsertPlayerAsync(SteamUser user)
         {
             try
             {
@@ -28,24 +28,24 @@ namespace SailwindRegatta
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Plugin.Log.LogError($"Supabase player upsert failed ({(int)response.StatusCode}): {raw}");
-                    return;
+                    Plugin.Log.LogError($"Supabase upsert_player failed ({(int)response.StatusCode}): {raw}");
+                    return null;
                 }
 
                 // RPC returning a scalar UUID comes back as a JSON string: "\"uuid-here\""
                 string playerUuid = raw.Trim().Trim('"');
                 if (string.IsNullOrEmpty(playerUuid))
                 {
-                    Plugin.Log.LogError("Supabase upsert_player RPC returned empty UUID.");
-                    return;
+                    Plugin.Log.LogError("Supabase upsert_player returned empty UUID.");
+                    return null;
                 }
 
-                Plugin.Session = new PlayerSession(playerUuid);
-                Plugin.Log.LogInfo($"Supabase session ready. PlayerUUID: {Plugin.Session.PlayerUuid}");
+                return playerUuid;
             }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"Supabase InitPlayerAsync exception: {ex.Message}");
+                return null;
             }
         }
 
@@ -74,7 +74,7 @@ namespace SailwindRegatta
                 string runUuid = raw.Trim().Trim('"');
                 if (string.IsNullOrEmpty(runUuid))
                 {
-                    Plugin.Log.LogError("Supabase start_run RPC returned empty UUID.");
+                    Plugin.Log.LogError("Supabase start_run returned empty UUID.");
                     return null;
                 }
 

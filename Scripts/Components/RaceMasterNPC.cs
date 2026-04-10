@@ -18,11 +18,7 @@ namespace SailwindRegatta
 
             var body = BuildCharacter(raceMaster);
             if (body == null)
-            {
-                Plugin.Log.LogWarning($"RaceMasterNPC: aborting init for race '{race.DisplayName}'. Check avatar index in RaceMasterRegistry.");
                 return;
-            }
-            Plugin.Log.LogDebug($"Character added to RaceMasterNPC: {body.name}");
 
             var uiGO = new GameObject("RaceMasterUI");
             uiGO.transform.SetParent(body.transform, worldPositionStays: false);
@@ -34,8 +30,6 @@ namespace SailwindRegatta
             var uiController = uiGO.AddComponent<RaceMasterUIController>();
             uiController.Init(_ui);
 
-            Plugin.Log.LogDebug($"UI added to RaceMasterNPC: {uiGO.name}");
-
             // Outer prefetch trigger — larger radius so the leaderboard fetch starts
             // before the player reaches the NPC, making data ready on arrival.
             var prefetchGO = new GameObject("RaceMasterLeaderboardFetcher");
@@ -45,7 +39,6 @@ namespace SailwindRegatta
             prefetchCol.radius = 8f;
             var prefetcher = prefetchGO.AddComponent<RaceMasterLeaderboardFetcher>();
             prefetcher.Init(_ui, _race);
-            Plugin.Log.LogDebug($"Prefetcher added to RaceMasterNPC: {prefetchGO.name}");
         }
 
         // Clones the CharacterCustomizer mesh from Port.ports[config.Avatar] and
@@ -54,21 +47,21 @@ namespace SailwindRegatta
         {
             if (raceMaster.Avatar < 0 || raceMaster.Avatar >= Port.ports.Length)
             {
-                Plugin.Log.LogWarning($"RaceMasterNPC: avatar index {raceMaster.Avatar} is out of range (Port.ports.Length = {Port.ports.Length}).");
+                Plugin.Log.LogError($"RaceMasterNPC: avatar index {raceMaster.Avatar} is out of range (Port.ports.Length = {Port.ports.Length}).");
                 return null;
             }
 
             var dude = Port.ports[raceMaster.Avatar].GetDude();
             if (dude == null)
             {
-                Plugin.Log.LogWarning($"RaceMasterNPC: GetDude() returned null for port index {raceMaster.Avatar}.");
+                Plugin.Log.LogError($"RaceMasterNPC: GetDude() returned null for port index {raceMaster.Avatar}.");
                 return null;
             }
 
             var customizer = dude.GetComponentInChildren<CharacterCustomizer>();
             if (customizer == null)
             {
-                Plugin.Log.LogWarning($"RaceMasterNPC: no CharacterCustomizer found on dude at port index {raceMaster.Avatar}.");
+                Plugin.Log.LogError($"RaceMasterNPC: no CharacterCustomizer found on dude at port index {raceMaster.Avatar}.");
                 return null;
             }
 
@@ -94,8 +87,7 @@ namespace SailwindRegatta
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player")) { 
-                Plugin.Log.LogDebug("Player nearby, showing UI");
+            if (other.CompareTag("Player")) {
                 _playerNearby = true;
                 _ui.Show();
             }
@@ -104,7 +96,6 @@ namespace SailwindRegatta
         private void OnTriggerExit(Collider other)
         {
             if (other.CompareTag("Player")) {
-                Plugin.Log.LogDebug("Player left, hiding UI");
                 _playerNearby = false;
                 _ui.Hide();
             }
@@ -154,11 +145,9 @@ namespace SailwindRegatta
         {
             if (_leaderboardData != null || _leaderboardFetching) return;
 
-            Plugin.Log.LogDebug($"Fetching leaderboard for race '{_race.DisplayName}'");
             _leaderboardFetching = true;
             _leaderboardData = await SupabaseClient.GetLeaderboardAsync(_race.Id);
             _leaderboardFetching = false;
-            Plugin.Log.LogDebug($"Leaderboard fetched '{_leaderboardData?.Length}' entries");
             _ui.LeaderboardData = _leaderboardData;
         }
     }

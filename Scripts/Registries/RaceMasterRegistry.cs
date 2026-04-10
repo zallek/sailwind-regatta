@@ -12,11 +12,11 @@ namespace SailwindRegatta
             // position/eulerAngles are relative to the port transform — tune in-game as needed.
             // avatar: index into Port.ports[] — determines which port's dude mesh is cloned.
             new RaceMaster(
-                portName:    PortName.GoldRockCity,
-                position:    new Vector3(5f, -0.78f, -5f),
+                portName: PortName.GoldRockCity,
+                position: new Vector3(5f, -0.78f, -5f),
                 eulerAngles: new Vector3(0f, 30f, 0f),
-                avatar:      2,
-                raceId:      1
+                avatar: 2,
+                raceId: 1
             ),
         };
     }

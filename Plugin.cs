@@ -30,8 +30,12 @@ namespace SailwindRegatta
             Instance = this;
             Log = Logger;
 
-            UseInGameTime = Config.Bind("Display", "UseInGameTime", true,
-                "When true, run durations are displayed as in-game time instead of real-world time.");
+            UseInGameTime = Config.Bind(
+                "Display",
+                "UseInGameTime",
+                true,
+                "When true, run durations are displayed as in-game time instead of real-world time."
+            );
 
             // Required for HTTPS on Mono/.NET 4.8 in Unity.
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -50,13 +54,15 @@ namespace SailwindRegatta
             try
             {
                 var steamUser = SteamUtils.GetCurrentUser();
-                if (steamUser == null) {
+                if (steamUser == null)
+                {
                     Log.LogWarning("Could not retrieve Steam user. Online mode disabled.");
                     return;
                 }
 
                 var playerUuid = await SupabaseClient.UpsertPlayerAsync(steamUser);
-                if (playerUuid == null) {
+                if (playerUuid == null)
+                {
                     Log.LogWarning("Could not create online player. Online mode disabled.");
                     return;
                 }

@@ -16,7 +16,7 @@ namespace SailwindRegatta
                     CheckpointName.DragonCliffs,
                     CheckpointName.GoldRockCity,
                 }
-            )
+            ),
         };
 
         public static Race GetById(int id)

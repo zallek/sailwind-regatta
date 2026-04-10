@@ -4,19 +4,18 @@ using UnityEngine;
 
 namespace SailwindRegatta
 {
-
     // NOTE: JsonUtility silently drops nested [Serializable] objects — keep this class flat.
     [Serializable]
     internal class SRSaveData
     {
-        public bool   hasActiveRace;
-        public int    raceId;
-        public int    checkpointIndex;
-        public int    startDay;
-        public string id;           // Supabase run id; empty if StartRunAsync hasn't resolved yet
+        public bool hasActiveRace;
+        public int raceId;
+        public int checkpointIndex;
+        public int startDay;
+        public string id; // Supabase run id; empty if StartRunAsync hasn't resolved yet
         public string startedAtUtc; // ISO 8601 round-trip string of Run.StartedAt
-        public int    boatTypeId;    // -1 when BoatTypeId is null (JsonUtility cannot serialize int?)
-        public float  elapsedSeconds;
+        public int boatTypeId; // -1 when BoatTypeId is null (JsonUtility cannot serialize int?)
+        public float elapsedSeconds;
     }
 
     internal static class SaveUtils
@@ -28,14 +27,14 @@ namespace SailwindRegatta
             var active = RaceManager.Instance?.ActiveRun;
             if (active != null)
             {
-                payload.hasActiveRace   = true;
-                payload.raceId          = active.Race.Id;
+                payload.hasActiveRace = true;
+                payload.raceId = active.Race.Id;
                 payload.checkpointIndex = active.NextCheckpointIndex;
-                payload.startDay        = active.StartDay;
-                payload.id              = active.Id ?? string.Empty;
-                payload.startedAtUtc    = active.StartedAt.ToString("o");
-                payload.boatTypeId      = active.BoatTypeId ?? -1;
-                payload.elapsedSeconds  = active.ElapsedSeconds;
+                payload.startDay = active.StartDay;
+                payload.id = active.Id ?? string.Empty;
+                payload.startedAtUtc = active.StartedAt.ToString("o");
+                payload.boatTypeId = active.BoatTypeId ?? -1;
+                payload.elapsedSeconds = active.ElapsedSeconds;
             }
 
             string json = JsonUtility.ToJson(payload);
@@ -48,7 +47,8 @@ namespace SailwindRegatta
 
         public static void Load()
         {
-            if (!GameState.modData.ContainsKey(Plugin.PLUGIN_GUID)) return;
+            if (!GameState.modData.ContainsKey(Plugin.PLUGIN_GUID))
+                return;
 
             string json = GameState.modData[Plugin.PLUGIN_GUID];
             var payload = JsonUtility.FromJson<SRSaveData>(json);
@@ -57,7 +57,8 @@ namespace SailwindRegatta
                 Plugin.Log.LogError("Failed to parse mod data from save.");
                 return;
             }
-            if (!payload.hasActiveRace) return;
+            if (!payload.hasActiveRace)
+                return;
 
             var race = RaceRegistry.GetById(payload.raceId);
             if (race == null)
@@ -67,8 +68,10 @@ namespace SailwindRegatta
             }
 
             DateTime startedAt;
-            if (string.IsNullOrEmpty(payload.startedAtUtc) ||
-                !DateTime.TryParse(payload.startedAtUtc, null, DateTimeStyles.RoundtripKind, out startedAt))
+            if (
+                string.IsNullOrEmpty(payload.startedAtUtc)
+                || !DateTime.TryParse(payload.startedAtUtc, null, DateTimeStyles.RoundtripKind, out startedAt)
+            )
             {
                 Plugin.Log.LogWarning($"Saved run has invalid startedAtUtc '{payload.startedAtUtc}'; discarding run.");
                 return;
@@ -80,9 +83,9 @@ namespace SailwindRegatta
             var active = new Run(race, payload.startDay, startedAt)
             {
                 NextCheckpointIndex = payload.checkpointIndex,
-                Id                  = id,
-                BoatTypeId          = boatTypeId,
-                ElapsedSeconds      = payload.elapsedSeconds
+                Id = id,
+                BoatTypeId = boatTypeId,
+                ElapsedSeconds = payload.elapsedSeconds,
             };
 
             if (RaceManager.Instance == null)

@@ -1,5 +1,4 @@
 using PsychoticLab;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace SailwindRegatta
@@ -88,7 +87,8 @@ namespace SailwindRegatta
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player")) {
+            if (other.CompareTag("Player"))
+            {
                 _playerNearby = true;
                 _refreshTimer = 0f;
                 _ui.Show();
@@ -97,7 +97,8 @@ namespace SailwindRegatta
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player")) {
+            if (other.CompareTag("Player"))
+            {
                 _playerNearby = false;
                 _ui.Hide();
             }
@@ -105,7 +106,8 @@ namespace SailwindRegatta
 
         private void Update()
         {
-            if (!_playerNearby) return;
+            if (!_playerNearby)
+                return;
             _refreshTimer -= Time.deltaTime;
             if (_refreshTimer <= 0f)
             {
@@ -133,14 +135,16 @@ namespace SailwindRegatta
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player")) {
+            if (other.CompareTag("Player"))
+            {
                 FetchLeaderboard();
             }
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player")) {
+            if (other.CompareTag("Player"))
+            {
                 _leaderboardData = null;
                 _leaderboardFetching = false;
             }
@@ -148,7 +152,8 @@ namespace SailwindRegatta
 
         private async void FetchLeaderboard()
         {
-            if (_leaderboardData != null || _leaderboardFetching) return;
+            if (_leaderboardData != null || _leaderboardFetching)
+                return;
 
             _leaderboardFetching = true;
             _leaderboardData = await SupabaseClient.GetLeaderboardAsync(_race.Id);

@@ -64,7 +64,8 @@ namespace SailwindRegatta
             disk.transform.localScale = new Vector3(1f, 0.01f, 1f);
             disk.GetComponent<MeshRenderer>().material = mat;
 
-            if (!invertNormals) return;
+            if (!invertNormals)
+                return;
 
             var mesh = disk.GetComponent<MeshFilter>().mesh;
 

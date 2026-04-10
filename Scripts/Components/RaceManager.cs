@@ -13,7 +13,11 @@ namespace SailwindRegatta
 
         private void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(this); return; }
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this);
+                return;
+            }
             Instance = this;
         }
 
@@ -27,9 +31,10 @@ namespace SailwindRegatta
         {
             if (ActiveRun == null)
                 return;
-            
+
             int? boatTypeId = BoatTypeUtils.TryGetBoatTypeIdFromRudder(rudder);
-            if (boatTypeId == null) {
+            if (boatTypeId == null)
+            {
                 Plugin.Log.LogError("Could not resolve boat type id for this rudder.");
                 return;
             }
@@ -58,10 +63,12 @@ namespace SailwindRegatta
                     break;
                 }
             }
-            if (checkpoint == null) return;
+            if (checkpoint == null)
+                return;
 
             // Avoid duplicates if the scene reloads (old components are destroyed with it).
-            if (port.GetComponentInChildren<CheckpointArea>() != null) return;
+            if (port.GetComponentInChildren<CheckpointArea>() != null)
+                return;
 
             var child = new GameObject("CheckpointArea");
             child.transform.SetParent(port.transform, worldPositionStays: false);
@@ -76,11 +83,14 @@ namespace SailwindRegatta
         {
             foreach (var raceMaster in RaceMasterRegistry.RaceMasters)
             {
-                if (raceMaster.PortName.ToPortString() != port.GetPortName()) continue;
-                if (port.GetComponentInChildren<RaceMasterNPC>() != null) continue;
+                if (raceMaster.PortName.ToPortString() != port.GetPortName())
+                    continue;
+                if (port.GetComponentInChildren<RaceMasterNPC>() != null)
+                    continue;
 
                 var race = RaceRegistry.Races.Find(r => r.Id == raceMaster.RaceId);
-                if (race == null) continue;
+                if (race == null)
+                    continue;
 
                 var go = new GameObject("RaceMasterNPC");
                 go.transform.SetParent(port.transform, worldPositionStays: false);
@@ -95,7 +105,8 @@ namespace SailwindRegatta
         // only advance an already-active race.
         internal void OnPlayerEnteredCheckpoint(Checkpoint checkpoint)
         {
-            if (!GameState.playing) return;
+            if (!GameState.playing)
+                return;
 
             if (ActiveRun != null)
                 TryAdvanceCheckpoint(checkpoint);
@@ -128,7 +139,8 @@ namespace SailwindRegatta
 
         private void TryAdvanceCheckpoint(Checkpoint checkpoint)
         {
-            if (checkpoint.Name != ActiveRun.NextCheckpointName) return;
+            if (checkpoint.Name != ActiveRun.NextCheckpointName)
+                return;
 
             ActiveRun.NextCheckpointIndex++;
 

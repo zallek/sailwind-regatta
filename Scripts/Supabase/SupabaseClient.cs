@@ -20,12 +20,14 @@ namespace SailwindRegatta
 #else
                 bool dev = false;
 #endif
-                var body = JsonUtility.ToJson(new UpsertPlayerRpcRequest
-                {
-                    key  = ComputePlayerKey(user.SteamId, dev),
-                    name = user.PersonaName,
-                    dev  = dev
-                });
+                var body = JsonUtility.ToJson(
+                    new UpsertPlayerRpcRequest
+                    {
+                        key = ComputePlayerKey(user.SteamId, dev),
+                        name = user.PersonaName,
+                        dev = dev,
+                    }
+                );
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/upsert_player", body);
                 var response = await _http.SendAsync(req);
@@ -58,12 +60,14 @@ namespace SailwindRegatta
         {
             try
             {
-                var body = JsonUtility.ToJson(new StartRunRpcRequest
-                {
-                    player_id = session.PlayerUuid,
-                    race_id   = raceId,
-                    started_at  = startedAt.ToString("o")  // ISO 8601 round-trip format
-                });
+                var body = JsonUtility.ToJson(
+                    new StartRunRpcRequest
+                    {
+                        player_id = session.PlayerUuid,
+                        race_id = raceId,
+                        started_at = startedAt.ToString("o"), // ISO 8601 round-trip format
+                    }
+                );
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/start_run", body);
                 var response = await _http.SendAsync(req);
@@ -98,19 +102,23 @@ namespace SailwindRegatta
             try
             {
                 string body = boatTypeId.HasValue
-                    ? JsonUtility.ToJson(new FinishRunRpcRequest
-                    {
-                        run_id       = runId,
-                        finished_at  = finishedAt.ToString("o"),
-                        duration     = durationSeconds,
-                        boat_type_id = boatTypeId.Value
-                    })
-                    : JsonUtility.ToJson(new FinishRunNoBoatRpcRequest
-                    {
-                        run_id      = runId,
-                        finished_at = finishedAt.ToString("o"),
-                        duration    = durationSeconds
-                    });
+                    ? JsonUtility.ToJson(
+                        new FinishRunRpcRequest
+                        {
+                            run_id = runId,
+                            finished_at = finishedAt.ToString("o"),
+                            duration = durationSeconds,
+                            boat_type_id = boatTypeId.Value,
+                        }
+                    )
+                    : JsonUtility.ToJson(
+                        new FinishRunNoBoatRpcRequest
+                        {
+                            run_id = runId,
+                            finished_at = finishedAt.ToString("o"),
+                            duration = durationSeconds,
+                        }
+                    );
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/finish_run", body);
                 var response = await _http.SendAsync(req);
@@ -133,11 +141,7 @@ namespace SailwindRegatta
         {
             try
             {
-                var body = JsonUtility.ToJson(new AbortRunRpcRequest
-                {
-                    run_id     = runId,
-                    aborted_at = abortedAt.ToString("o")
-                });
+                var body = JsonUtility.ToJson(new AbortRunRpcRequest { run_id = runId, aborted_at = abortedAt.ToString("o") });
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/abort_run", body);
                 var response = await _http.SendAsync(req);
@@ -160,16 +164,18 @@ namespace SailwindRegatta
         {
             try
             {
-                var body = JsonUtility.ToJson(new GetLeaderboardRpcRequest
-                {
-                    race_id     = raceId,
-                    max_results = maxResults,
+                var body = JsonUtility.ToJson(
+                    new GetLeaderboardRpcRequest
+                    {
+                        race_id = raceId,
+                        max_results = maxResults,
 #if DEBUG
-                    dev         = true
+                        dev = true
 #else
-                    dev         = false
+                        dev = false
 #endif
-                });
+                    }
+                );
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/get_leaderboard", body);
                 var response = await _http.SendAsync(req);

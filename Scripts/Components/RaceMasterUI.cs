@@ -79,7 +79,8 @@ namespace SailwindRegatta
 
         private void RefreshActionText()
         {
-            if (RaceManager.Instance == null) return;
+            if (RaceManager.Instance == null)
+                return;
             if (RaceManager.Instance.ActiveRun != null)
                 _actionText.text = $"Abort the race\n\n{RaceManager.Instance.ActiveRun.Race.DisplayName}";
             else
@@ -101,12 +102,13 @@ namespace SailwindRegatta
                 sb.AppendLine("Top 5 Times");
                 sb.AppendLine();
                 foreach (var e in LeaderboardData)
-                    sb.AppendLine($"{e.rank}. {(e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name)}  {TimeUtils.FormatDuration(e.duration)}");
+                    sb.AppendLine(
+                        $"{e.rank}. {(e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name)}  {TimeUtils.FormatDuration(e.duration)}"
+                    );
                 _leaderboardText.text = sb.ToString().TrimEnd();
             }
         }
     }
-
 
     internal class RaceMasterButton : GoPointerButton
     {
@@ -120,7 +122,8 @@ namespace SailwindRegatta
 
         public override void OnActivate()
         {
-            if (RaceManager.Instance == null) return;
+            if (RaceManager.Instance == null)
+                return;
             UISoundPlayer.instance.PlayUISound(UISounds.buttonClick, 1f, 1.2f);
             if (RaceManager.Instance.ActiveRun == null)
                 RaceManager.Instance.StartRace(_race);

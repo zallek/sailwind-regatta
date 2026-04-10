@@ -13,8 +13,9 @@ namespace SailwindRegatta
     {
         public string key;
         public string name;
-        public bool   dev;
+        public bool dev;
     }
+
     // RPC returns a scalar UUID string directly — no wrapper needed.
 
     // Used by the start_run RPC — field names must match the SQL function parameter names.
@@ -22,8 +23,8 @@ namespace SailwindRegatta
     internal class StartRunRpcRequest
     {
         public string player_id;
-        public int    race_id;
-        public string started_at;  // ISO 8601 UTC string
+        public int race_id;
+        public string started_at; // ISO 8601 UTC string
     }
 
     // Used by the finish_run RPC when boat type is known.
@@ -31,9 +32,9 @@ namespace SailwindRegatta
     internal class FinishRunRpcRequest
     {
         public string run_id;
-        public string finished_at;   // ISO 8601 UTC string
-        public int    duration;      // real-world seconds
-        public int    boat_type_id;  // SaveableObject.sceneIndex
+        public string finished_at; // ISO 8601 UTC string
+        public int duration; // real-world seconds
+        public int boat_type_id; // SaveableObject.sceneIndex
     }
 
     // Used by the finish_run RPC when boat type is unknown (omits boat_type_id so the DB default NULL applies).
@@ -42,7 +43,7 @@ namespace SailwindRegatta
     {
         public string run_id;
         public string finished_at;
-        public int    duration;
+        public int duration;
     }
 
     // Used by the abort_run RPC — field names must match the SQL function parameter names.
@@ -50,15 +51,15 @@ namespace SailwindRegatta
     internal class AbortRunRpcRequest
     {
         public string run_id;
-        public string aborted_at;  // ISO 8601 UTC string
+        public string aborted_at; // ISO 8601 UTC string
     }
 
     // Used by the get_leaderboard RPC.
     [Serializable]
     internal class GetLeaderboardRpcRequest
     {
-        public int  race_id;
-        public int  max_results;
+        public int race_id;
+        public int max_results;
         public bool dev;
     }
 
@@ -66,9 +67,9 @@ namespace SailwindRegatta
     [Serializable]
     internal class LeaderboardEntryResponse
     {
-        public int    rank;
+        public int rank;
         public string player_name;
-        public int    duration;    // real-world seconds
+        public int duration; // real-world seconds
     }
 
     // JsonUtility cannot deserialise a root-level JSON array.

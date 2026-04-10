@@ -27,13 +27,14 @@ namespace SailwindRegatta
         {
             try
             {
-                string steamPath = Registry.GetValue(
-                    @"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string;
+                string steamPath = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string;
 
-                if (steamPath == null) return null;
+                if (steamPath == null)
+                    return null;
 
                 string vdfPath = Path.Combine(steamPath, "config", "loginusers.vdf");
-                if (!File.Exists(vdfPath)) return null;
+                if (!File.Exists(vdfPath))
+                    return null;
 
                 // VDF structure:
                 // "users" { "steamid" { "PersonaName" "Name" ... "MostRecent" "1" } }
@@ -50,7 +51,11 @@ namespace SailwindRegatta
                 {
                     string line = raw.Trim();
 
-                    if (line == "{") { depth++; continue; }
+                    if (line == "{")
+                    {
+                        depth++;
+                        continue;
+                    }
 
                     if (line == "}")
                     {
@@ -78,10 +83,13 @@ namespace SailwindRegatta
                     {
                         string key = ParseQuotedKey(line);
                         string value = ParseQuotedValue(line);
-                        if (key == null || value == null) continue;
+                        if (key == null || value == null)
+                            continue;
 
-                        if (key == "PersonaName") personaName = value;
-                        else if (key == "MostRecent" && value == "1") mostRecent = true;
+                        if (key == "PersonaName")
+                            personaName = value;
+                        else if (key == "MostRecent" && value == "1")
+                            mostRecent = true;
                     }
                 }
 
@@ -97,7 +105,8 @@ namespace SailwindRegatta
         // "KeyName"    "Value"  →  "KeyName"
         private static string ParseQuotedKey(string line)
         {
-            if (line.Length == 0 || line[0] != '"') return null;
+            if (line.Length == 0 || line[0] != '"')
+                return null;
             int end = line.IndexOf('"', 1);
             return end < 0 ? null : line.Substring(1, end - 1);
         }
@@ -106,11 +115,14 @@ namespace SailwindRegatta
         // "KeyName"    "Value"  →  "Value"
         private static string ParseQuotedValue(string line)
         {
-            if (line.Length == 0 || line[0] != '"') return null;
+            if (line.Length == 0 || line[0] != '"')
+                return null;
             int keyEnd = line.IndexOf('"', 1);
-            if (keyEnd < 0) return null;
+            if (keyEnd < 0)
+                return null;
             int valStart = line.IndexOf('"', keyEnd + 1);
-            if (valStart < 0) return null;
+            if (valStart < 0)
+                return null;
             int valEnd = line.IndexOf('"', valStart + 1);
             return valEnd < 0 ? null : line.Substring(valStart + 1, valEnd - valStart - 1);
         }

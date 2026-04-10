@@ -16,6 +16,19 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "build release",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/SailwindRegatta.sln",
+        "-c",
+        "Release"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
     }
   ]
 }

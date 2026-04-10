@@ -15,7 +15,11 @@ namespace SailwindRegatta
         {
             try
             {
-                bool dev = Plugin.DevMode.Value;
+#if DEBUG
+                bool dev = true;
+#else
+                bool dev = false;
+#endif
                 var body = JsonUtility.ToJson(new UpsertPlayerRpcRequest
                 {
                     key  = ComputePlayerKey(user.SteamId, dev),
@@ -160,7 +164,11 @@ namespace SailwindRegatta
                 {
                     race_id     = raceId,
                     max_results = maxResults,
-                    dev         = Plugin.DevMode.Value
+#if DEBUG
+                    dev         = true
+#else
+                    dev         = false
+#endif
                 });
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/get_leaderboard", body);

@@ -18,8 +18,6 @@ namespace SailwindRegatta
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
         internal static PlayerSession Session { get; set; }
-        internal static ConfigEntry<bool> ShowCheckpointZones { get; private set; }
-        internal static ConfigEntry<bool> DevMode { get; private set; }
         internal static ConfigEntry<bool> UseInGameTime { get; private set; }
 
         private void Awake()
@@ -31,11 +29,6 @@ namespace SailwindRegatta
             }
             Instance = this;
             Log = Logger;
-
-            DevMode = Config.Bind("Dev", "DevMode", false,
-                "When true, runs are saved under a separate dev player (name suffixed with '-dev', different key salt). Keeps dev runs off the main leaderboard.");
-            ShowCheckpointZones = Config.Bind("Dev", "ShowCheckpointZones", false,
-                "Render checkpoint detection zones as semi-transparent red spheres.");
 
             UseInGameTime = Config.Bind("Display", "UseInGameTime", true,
                 "When true, run durations are displayed as in-game time instead of real-world time.");

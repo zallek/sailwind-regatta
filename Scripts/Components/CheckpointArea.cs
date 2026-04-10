@@ -20,8 +20,9 @@ namespace SailwindRegatta
             col.isTrigger = true;
             col.radius = 0.5f;
 
-            if (Plugin.ShowCheckpointZones.Value)
-                SpawnDebugDisk();
+#if DEBUG
+            SpawnDebugDisk();
+#endif
         }
 
         private void OnTriggerEnter(Collider other)
@@ -32,6 +33,7 @@ namespace SailwindRegatta
             }
         }
 
+#if DEBUG
         private void SpawnDebugDisk()
         {
             var shader = Shader.Find("Sprites/Default");
@@ -83,5 +85,6 @@ namespace SailwindRegatta
                 mesh.SetTriangles(triangles, m);
             }
         }
+#endif
     }
 }

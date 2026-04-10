@@ -158,7 +158,7 @@ namespace SailwindRegatta
             int duration = (int)ActiveRun.ElapsedSeconds;
 
             Plugin.Log.LogInfo($"Race finished: {raceName}");
-            NotificationUi.instance.ShowNotification($"{raceName}\nRace finished in {duration}s!", 15f);
+            NotificationUi.instance.ShowNotification($"{raceName}\nRace finished!\n{TimeUtils.FormatDuration(duration)}", 15f);
 
             ActiveRun = null;
 

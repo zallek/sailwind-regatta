@@ -101,16 +101,9 @@ namespace SailwindRegatta
                 sb.AppendLine("Top 5 Times");
                 sb.AppendLine();
                 foreach (var e in LeaderboardData)
-                    sb.AppendLine($"{e.rank}. {(e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name)}  {FormatDuration(e.duration)}");
+                    sb.AppendLine($"{e.rank}. {(e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name)}  {TimeUtils.FormatDuration(e.duration)}");
                 _leaderboardText.text = sb.ToString().TrimEnd();
             }
-        }
-
-        private static string FormatDuration(int seconds)
-        {
-            int m = seconds / 60;
-            int s = seconds % 60;
-            return $"{m}:{s:D2}";
         }
     }
 

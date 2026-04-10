@@ -89,6 +89,7 @@
     <Compile Include="Scripts\Utils\BoatTypeUtils.cs" />
     <Compile Include="Scripts\Utils\SaveUtils.cs" />
     <Compile Include="Scripts\Utils\SteamUtils.cs" />
+    <Compile Include="Scripts\Utils\TimeUtils.cs" />
     <Compile Include="Secrets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

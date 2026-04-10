@@ -94,6 +94,31 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5)
+RETURNS TABLE (rank bigint, player_name text, duration int)
+LANGUAGE sql SECURITY DEFINER
+SET search_path = ''
+AS $$
+    WITH best_runs AS (
+        SELECT DISTINCT ON (r.player_id)
+            p.name AS player_name,
+            r.duration
+        FROM public.run r
+        JOIN public.player p ON p.id = r.player_id
+        WHERE r.race_id     = get_leaderboard.race_id
+          AND r.finished_at IS NOT NULL
+          AND r.aborted_at  IS NULL
+        ORDER BY r.player_id, r.duration ASC
+    )
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY duration ASC),
+        player_name,
+        duration
+    FROM best_runs
+    ORDER BY duration ASC
+    LIMIT get_leaderboard.max_results;
+$$;
+
 -- ============================================================
 -- RLS policies
 -- ============================================================

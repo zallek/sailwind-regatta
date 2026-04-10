@@ -71,7 +71,6 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Secrets.cs" />
     <Compile Include="Scripts\Components\CheckpointArea.cs" />
-    <Compile Include="Scripts\Components\RaceMasterButton.cs" />
     <Compile Include="Scripts\Components\RaceMasterNPC.cs" />
     <Compile Include="Scripts\Components\RaceMasterUI.cs" />
     <Compile Include="Scripts\Entities\Checkpoint.cs" />

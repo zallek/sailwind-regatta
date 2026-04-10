@@ -145,6 +145,38 @@ namespace SailwindRegatta
             }
         }
 
+        internal static async Task<LeaderboardEntryResponse[]> GetLeaderboardAsync(int raceId, int maxResults = 5)
+        {
+            try
+            {
+                var body = JsonUtility.ToJson(new GetLeaderboardRpcRequest
+                {
+                    race_id     = raceId,
+                    max_results = maxResults
+                });
+
+                var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/get_leaderboard", body);
+                var response = await _http.SendAsync(req);
+                string raw = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Plugin.Log.LogError($"Supabase get_leaderboard failed ({(int)response.StatusCode}): {raw}");
+                    return null;
+                }
+
+                // PostgREST returns a JSON array at the root — wrap it for JsonUtility.
+                var wrapper = JsonUtility.FromJson<LeaderboardWrapper>("{\"items\":" + raw + "}");
+                // JsonUtility leaves empty [] as null; callers expect a real zero-length array.
+                return wrapper?.items ?? Array.Empty<LeaderboardEntryResponse>();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"Supabase GetLeaderboardAsync exception: {ex.Message}");
+                return null;
+            }
+        }
+
         private static HttpRequestMessage BuildRequest(HttpMethod method, string path, string jsonBody = null)
         {
             var req = new HttpRequestMessage(method, SupabaseConfig.ProjectUrl + path);

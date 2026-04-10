@@ -1,4 +1,5 @@
 using PsychoticLab;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace SailwindRegatta
@@ -8,8 +9,6 @@ namespace SailwindRegatta
     internal class RaceMasterNPC : MonoBehaviour
     {
         private Race _race;
-        private RaceMasterUI _ui;
-        private bool _playerNearby;
 
         internal void Init(Race race, RaceMaster raceMaster)
         {
@@ -17,27 +16,36 @@ namespace SailwindRegatta
             transform.localPosition = raceMaster.Position;
             transform.localEulerAngles = raceMaster.EulerAngles;
 
-            // Proximity trigger — fires OnTriggerEnter/Exit on this GameObject.
-            var trigger = gameObject.AddComponent<SphereCollider>();
-            trigger.isTrigger = true;
-            trigger.radius = 3f;
-
             var body = BuildCharacter(raceMaster);
             if (body == null)
             {
                 Plugin.Log.LogWarning($"RaceMasterNPC: aborting init for race '{race.DisplayName}'. Check avatar index in RaceMasterRegistry.");
                 return;
             }
-
-            var button = body.AddComponent<RaceMasterButton>();
-            button.npc = this;
+            Plugin.Log.LogDebug($"Character added to RaceMasterNPC: {body.name}");
 
             var uiGO = new GameObject("RaceMasterUI");
             uiGO.transform.SetParent(body.transform, worldPositionStays: false);
-            _ui = uiGO.AddComponent<RaceMasterUI>();
-            _ui.Init();
+            var uiCol = uiGO.AddComponent<SphereCollider>();
+            uiCol.isTrigger = true;
+            uiCol.radius = 3f;
+            var _ui = uiGO.AddComponent<RaceMasterUI>();
+            _ui.Init(race);
+            var uiController = uiGO.AddComponent<RaceMasterUIController>();
+            uiController.Init(_ui);
 
-            Plugin.Log.LogInfo($"RaceMasterNPC built for race: {race.DisplayName}");
+            Plugin.Log.LogDebug($"UI added to RaceMasterNPC: {uiGO.name}");
+
+            // Outer prefetch trigger — larger radius so the leaderboard fetch starts
+            // before the player reaches the NPC, making data ready on arrival.
+            var prefetchGO = new GameObject("RaceMasterLeaderboardFetcher");
+            prefetchGO.transform.SetParent(body.transform, worldPositionStays: false);
+            var prefetchCol = prefetchGO.AddComponent<SphereCollider>();
+            prefetchCol.isTrigger = true;
+            prefetchCol.radius = 8f;
+            var prefetcher = prefetchGO.AddComponent<RaceMasterLeaderboardFetcher>();
+            prefetcher.Init(_ui, _race);
+            Plugin.Log.LogDebug($"Prefetcher added to RaceMasterNPC: {prefetchGO.name}");
         }
 
         // Clones the CharacterCustomizer mesh from Port.ports[config.Avatar] and
@@ -70,52 +78,88 @@ namespace SailwindRegatta
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = Vector3.one;
 
-            // GoPointer's raycast uses layer mask -604165 (excludes layers 2, 11-13, 16, 19).
-            // Force Default layer (0) so the raycast can hit this object.
-            go.layer = 0;
-
-            // Non-trigger CapsuleCollider for GoPointer raycast hit detection.
-            var col = go.AddComponent<CapsuleCollider>();
-            col.center = new Vector3(0f, 1f, 0f);
-            col.height = 2f;
-            col.radius = 0.3f;
-
-            // GoPointerButton requires a Renderer on the same GameObject.
-            // CharacterCustomizer only has SkinnedMeshRenderers on children, so add
-            // an empty MeshRenderer to the root (no mesh/material — renders nothing).
-            if (go.GetComponent<Renderer>() == null)
-                go.AddComponent<MeshRenderer>();
-
             return go;
+        }
+    }
+
+    internal class RaceMasterUIController : MonoBehaviour
+    {
+        private bool _playerNearby;
+        private RaceMasterUI _ui;
+
+        internal void Init(RaceMasterUI ui)
+        {
+            _ui = ui;
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!other.CompareTag("Player")) return;
-            _playerNearby = true;
-            _ui?.Show();
+            if (other.CompareTag("Player")) { 
+                Plugin.Log.LogDebug("Player nearby, showing UI");
+                _playerNearby = true;
+                _ui.Show();
+            }
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (!other.CompareTag("Player")) return;
-            _playerNearby = false;
-            _ui?.Hide();
+            if (other.CompareTag("Player")) {
+                Plugin.Log.LogDebug("Player left, hiding UI");
+                _playerNearby = false;
+                _ui.Hide();
+            }
         }
 
         private void Update()
         {
             // Keep text in sync if race state changes while player is nearby.
-            if (_playerNearby) _ui?.Refresh();
+            if (_playerNearby) {
+                _ui.Refresh();
+            }
+        }
+    }
+
+    // Sits on the outer-radius trigger child GameObject.
+    // Starts the leaderboard prefetch when the player enters range.
+    internal class RaceMasterLeaderboardFetcher : MonoBehaviour
+    {
+        private LeaderboardEntryResponse[] _leaderboardData;
+        private bool _leaderboardFetching;
+
+        private RaceMasterUI _ui;
+        private Race _race;
+
+        internal void Init(RaceMasterUI ui, Race race)
+        {
+            _ui = ui;
+            _race = race;
         }
 
-        internal void Activate()
+        private void OnTriggerEnter(Collider other)
         {
-            UISoundPlayer.instance.PlayUISound(UISounds.buttonClick, 1f, 1.2f);
-            if (RaceManager.Instance.ActiveRun == null)
-                RaceManager.Instance.StartRace(_race);
-            else
-                RaceManager.Instance.AbortRace("Aborted by Race Master.");
+            if (other.CompareTag("Player")) {
+                FetchLeaderboard();
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.CompareTag("Player")) {
+                _leaderboardData = null;
+                _leaderboardFetching = false;
+            }
+        }
+
+        private async void FetchLeaderboard()
+        {
+            if (_leaderboardData != null || _leaderboardFetching) return;
+
+            Plugin.Log.LogDebug($"Fetching leaderboard for race '{_race.DisplayName}'");
+            _leaderboardFetching = true;
+            _leaderboardData = await SupabaseClient.GetLeaderboardAsync(_race.Id);
+            _leaderboardFetching = false;
+            Plugin.Log.LogDebug($"Leaderboard fetched '{_leaderboardData?.Length}' entries");
+            _ui.LeaderboardData = _leaderboardData;
         }
     }
 }

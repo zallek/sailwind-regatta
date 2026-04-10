@@ -69,8 +69,8 @@
     <Compile Include="Patches\PortPatches.cs" />
     <Compile Include="Patches\SaveLoadManagerPatches.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="Secrets.cs" />
     <Compile Include="Scripts\Components\CheckpointArea.cs" />
+    <Compile Include="Scripts\Components\RaceManager.cs" />
     <Compile Include="Scripts\Components\RaceMasterNPC.cs" />
     <Compile Include="Scripts\Components\RaceMasterUI.cs" />
     <Compile Include="Scripts\Entities\Checkpoint.cs" />
@@ -79,17 +79,17 @@
     <Compile Include="Scripts\Entities\Run.cs" />
     <Compile Include="Scripts\Enums\CheckpointName.cs" />
     <Compile Include="Scripts\Enums\PortName.cs" />
-    <Compile Include="Scripts\RaceManager.cs" />
     <Compile Include="Scripts\Registries\CheckpointRegistry.cs" />
     <Compile Include="Scripts\Registries\RaceMasterRegistry.cs" />
     <Compile Include="Scripts\Registries\RaceRegistry.cs" />
-    <Compile Include="Scripts\SaveManager.cs" />
     <Compile Include="Scripts\Supabase\PlayerSession.cs" />
     <Compile Include="Scripts\Supabase\SupabaseClient.cs" />
     <Compile Include="Scripts\Supabase\SupabaseConfig.cs" />
     <Compile Include="Scripts\Supabase\SupabaseModels.cs" />
     <Compile Include="Scripts\Utils\BoatTypeUtils.cs" />
+    <Compile Include="Scripts\Utils\SaveUtils.cs" />
     <Compile Include="Scripts\Utils\SteamUtils.cs" />
+    <Compile Include="Secrets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)SailwindRegatta.VS.props" />

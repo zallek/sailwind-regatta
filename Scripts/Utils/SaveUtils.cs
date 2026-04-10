@@ -19,7 +19,7 @@ namespace SailwindRegatta
         public float  elapsedSeconds;
     }
 
-    internal static class SaveManager
+    internal static class SaveUtils
     {
         public static void Save()
         {
@@ -69,7 +69,10 @@ namespace SailwindRegatta
             DateTime startedAt;
             if (string.IsNullOrEmpty(payload.startedAtUtc) ||
                 !DateTime.TryParse(payload.startedAtUtc, null, DateTimeStyles.RoundtripKind, out startedAt))
-                startedAt = DateTime.UtcNow;
+            {
+                Plugin.Log.LogWarning($"Saved run has invalid startedAtUtc '{payload.startedAtUtc}'; discarding run.");
+                return;
+            }
 
             int? boatTypeId = payload.boatTypeId >= 0 ? payload.boatTypeId : (int?)null;
             string id = string.IsNullOrEmpty(payload.id) ? null : payload.id;

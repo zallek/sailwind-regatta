@@ -8,7 +8,7 @@ namespace SailwindRegatta
     {
         static void Postfix()
         {
-            SaveManager.Save();
+            SaveUtils.Save();
         }
     }
 
@@ -17,7 +17,7 @@ namespace SailwindRegatta
     {
         static void Postfix()
         {
-            SaveManager.Load();
+            SaveUtils.Load();
         }
     }
 }

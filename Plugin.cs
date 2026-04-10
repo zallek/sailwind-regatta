@@ -50,20 +50,27 @@ namespace SailwindRegatta
 
         private static async Task InitOnlineSessionAsync()
         {
-            var steamUser = SteamUtils.GetCurrentUser();
-            if (steamUser == null) {
-                Log.LogWarning("Could not retrieve Steam user. Online mode disabled.");
-                return;
-            }
+            try
+            {
+                var steamUser = SteamUtils.GetCurrentUser();
+                if (steamUser == null) {
+                    Log.LogWarning("Could not retrieve Steam user. Online mode disabled.");
+                    return;
+                }
 
-            var playerUuid = await SupabaseClient.UpsertPlayerAsync(steamUser);
-            if (playerUuid == null) {
-                Log.LogWarning("Could not create online player. Online mode disabled.");
-                return;
+                var playerUuid = await SupabaseClient.UpsertPlayerAsync(steamUser);
+                if (playerUuid == null) {
+                    Log.LogWarning("Could not create online player. Online mode disabled.");
+                    return;
+                }
+
+                Session = new PlayerSession(playerUuid);
+                Log.LogInfo($"Online session initialized. PlayerUUID: {Session.PlayerUuid}");
             }
-        
-            Session = new PlayerSession(playerUuid);
-            Log.LogInfo($"Online session initialized. PlayerUUID: {Session.PlayerUuid}");
+            catch (System.Exception ex)
+            {
+                Log.LogError($"InitOnlineSessionAsync exception: {ex.Message}");
+            }
         }
     }
 }

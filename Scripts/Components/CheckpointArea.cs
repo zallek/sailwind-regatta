@@ -35,7 +35,13 @@ namespace SailwindRegatta
 
         private void SpawnDebugSpheres()
         {
-            var mat = new Material(Shader.Find("Sprites/Default"));
+            var shader = Shader.Find("Sprites/Default");
+            if (shader == null)
+            {
+                Plugin.Log.LogWarning("CheckpointArea: Shader 'Sprites/Default' not found; skipping debug spheres.");
+                return;
+            }
+            var mat = new Material(shader);
             mat.color = new Color(1f, 0f, 0f, 0.3f);
 
             SpawnShell(mat, invertNormals: false);

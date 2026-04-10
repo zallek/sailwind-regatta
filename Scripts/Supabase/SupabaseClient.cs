@@ -114,6 +114,7 @@ namespace SailwindRegatta
                 {
                     string raw = await response.Content.ReadAsStringAsync();
                     Plugin.Log.LogError($"Supabase finish_run failed ({(int)response.StatusCode}): {raw}");
+                    return false;
                 }
                 return true;
             }

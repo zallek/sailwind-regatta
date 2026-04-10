@@ -79,10 +79,11 @@ namespace SailwindRegatta
 
         private void RefreshActionText()
         {
+            if (RaceManager.Instance == null) return;
             if (RaceManager.Instance.ActiveRun != null)
-                _actionTextGO.GetComponent<TextMesh>().text = $"Abort the race\n\n{RaceManager.Instance.ActiveRun.Race.DisplayName}";
+                _actionText.text = $"Abort the race\n\n{RaceManager.Instance.ActiveRun.Race.DisplayName}";
             else
-                _actionTextGO.GetComponent<TextMesh>().text = $"Start the race\n\n{_race.DisplayName}";
+                _actionText.text = $"Start the race\n\n{_race.DisplayName}";
         }
 
         private void RefreshLeaderboard()
@@ -92,7 +93,7 @@ namespace SailwindRegatta
 
             if (LeaderboardData.Length == 0)
             {
-                _leaderboardGO.GetComponent<TextMesh>().text = "Top 5 Times\n\nNo records yet";
+                _leaderboardText.text = "Top 5 Times\n\nNo records yet";
             }
             else
             {
@@ -101,7 +102,7 @@ namespace SailwindRegatta
                 sb.AppendLine();
                 foreach (var e in LeaderboardData)
                     sb.AppendLine($"{e.rank}. {(e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name)}  {FormatDuration(e.duration)}");
-                _leaderboardGO.GetComponent<TextMesh>().text = sb.ToString().TrimEnd();
+                _leaderboardText.text = sb.ToString().TrimEnd();
             }
         }
 
@@ -126,6 +127,7 @@ namespace SailwindRegatta
 
         public override void OnActivate()
         {
+            if (RaceManager.Instance == null) return;
             UISoundPlayer.instance.PlayUISound(UISounds.buttonClick, 1f, 1.2f);
             if (RaceManager.Instance.ActiveRun == null)
                 RaceManager.Instance.StartRace(_race);

@@ -79,6 +79,7 @@ namespace SailwindRegatta
     {
         private bool _playerNearby;
         private RaceMasterUI _ui;
+        private float _refreshTimer;
 
         internal void Init(RaceMasterUI ui)
         {
@@ -89,6 +90,7 @@ namespace SailwindRegatta
         {
             if (other.CompareTag("Player")) {
                 _playerNearby = true;
+                _refreshTimer = 0f;
                 _ui.Show();
             }
         }
@@ -103,9 +105,12 @@ namespace SailwindRegatta
 
         private void Update()
         {
-            // Keep text in sync if race state changes while player is nearby.
-            if (_playerNearby) {
+            if (!_playerNearby) return;
+            _refreshTimer -= Time.deltaTime;
+            if (_refreshTimer <= 0f)
+            {
                 _ui.Refresh();
+                _refreshTimer = 0.5f;
             }
         }
     }

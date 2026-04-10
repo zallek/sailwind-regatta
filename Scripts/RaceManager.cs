@@ -75,6 +75,23 @@ namespace SailwindRegatta
 
         // Called by the Port.Start() patch when any port initialises.
         // Injects a RaceMasterNPC child for every registry entry matching this port.
+        internal void TryInjectRaceScroll(Port port)
+        {
+            foreach (var config in RaceScrollRegistry.Scrolls)
+            {
+                if (config.PortName.ToPortString() != port.GetPortName()) continue;
+
+                var race = RaceRegistry.GetById(config.RaceId);
+                if (race == null) continue;
+
+                var go = new GameObject("RaceScrollSpawner");
+                go.transform.SetParent(port.transform, worldPositionStays: false);
+                go.AddComponent<RaceScrollSpawner>().Init(race, config);
+
+                Plugin.Log.LogInfo($"RaceScrollSpawner injected on port: {port.GetPortName()}");
+            }
+        }
+
         internal void TryInjectRaceMasterNPC(Port port)
         {
             foreach (var raceMaster in RaceMasterRegistry.RaceMasters)

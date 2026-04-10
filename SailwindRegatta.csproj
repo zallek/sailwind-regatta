@@ -53,6 +53,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
@@ -68,15 +71,18 @@
     <Compile Include="Patches\GPButtonSteeringWheelPatches.cs" />
     <Compile Include="Patches\PortPatches.cs" />
     <Compile Include="Patches\SaveLoadManagerPatches.cs" />
+    <Compile Include="Patches\ShipItemScrollPatches.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="Secrets.cs" />
     <Compile Include="Scripts\Components\CheckpointArea.cs" />
     <Compile Include="Scripts\Components\RaceMasterButton.cs" />
     <Compile Include="Scripts\Components\RaceMasterNPC.cs" />
     <Compile Include="Scripts\Components\RaceMasterUI.cs" />
+    <Compile Include="Scripts\Components\RaceScroll.cs" />
+    <Compile Include="Scripts\Components\RaceScrollSpawner.cs" />
     <Compile Include="Scripts\Entities\Checkpoint.cs" />
     <Compile Include="Scripts\Entities\Race.cs" />
     <Compile Include="Scripts\Entities\RaceMaster.cs" />
+    <Compile Include="Scripts\Entities\RaceScrollConfig.cs" />
     <Compile Include="Scripts\Entities\Run.cs" />
     <Compile Include="Scripts\Enums\CheckpointName.cs" />
     <Compile Include="Scripts\Enums\PortName.cs" />
@@ -84,6 +90,7 @@
     <Compile Include="Scripts\Registries\CheckpointRegistry.cs" />
     <Compile Include="Scripts\Registries\RaceMasterRegistry.cs" />
     <Compile Include="Scripts\Registries\RaceRegistry.cs" />
+    <Compile Include="Scripts\Registries\RaceScrollRegistry.cs" />
     <Compile Include="Scripts\SaveManager.cs" />
     <Compile Include="Scripts\Supabase\PlayerSession.cs" />
     <Compile Include="Scripts\Supabase\SupabaseClient.cs" />
@@ -91,6 +98,7 @@
     <Compile Include="Scripts\Supabase\SupabaseModels.cs" />
     <Compile Include="Scripts\Utils\BoatTypeUtils.cs" />
     <Compile Include="Scripts\Utils\SteamUtils.cs" />
+    <Compile Include="Secrets.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)SailwindRegatta.VS.props" />

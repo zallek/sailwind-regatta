@@ -9,6 +9,7 @@ namespace SailwindRegatta
         {
             RaceManager.Instance?.TryInjectCheckpointArea(__instance);
             RaceManager.Instance?.TryInjectRaceMasterNPC(__instance);
+            RaceManager.Instance?.TryInjectRaceScroll(__instance);
         }
     }
 }

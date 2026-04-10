@@ -19,7 +19,8 @@ namespace SailwindRegatta
                 var body = JsonUtility.ToJson(new UpsertPlayerRpcRequest
                 {
                     key  = ComputePlayerKey(user.SteamId, dev),
-                    name = dev ? user.PersonaName + "-dev" : user.PersonaName
+                    name = user.PersonaName,
+                    dev  = dev
                 });
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/upsert_player", body);
@@ -157,7 +158,8 @@ namespace SailwindRegatta
                 var body = JsonUtility.ToJson(new GetLeaderboardRpcRequest
                 {
                     race_id     = raceId,
-                    max_results = maxResults
+                    max_results = maxResults,
+                    dev         = Plugin.DevMode.Value
                 });
 
                 var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/get_leaderboard", body);

@@ -13,6 +13,7 @@ CREATE TABLE player (
     id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
     key        text        UNIQUE NOT NULL,  -- SHA256(steamId + salt), computed client-side
     name       text        NOT NULL,
+    dev        boolean     NOT NULL DEFAULT false,
     created_at timestamptz NOT NULL DEFAULT now()
 );
 
@@ -39,13 +40,13 @@ INSERT INTO race (id, name) VALUES
 -- ============================================================
 -- RPC functions
 -- ============================================================
-CREATE OR REPLACE FUNCTION upsert_player(key text, name text)
+CREATE OR REPLACE FUNCTION upsert_player(key text, name text, dev boolean DEFAULT false)
 RETURNS uuid LANGUAGE sql SECURITY DEFINER
 SET search_path = ''
 AS $$
-    INSERT INTO public.player (key, name)
-    VALUES ($1, $2)
-    ON CONFLICT (key) DO UPDATE SET name = EXCLUDED.name
+    INSERT INTO public.player (key, name, dev)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (key) DO UPDATE SET name = EXCLUDED.name, dev = EXCLUDED.dev
     RETURNING id;
 $$;
 
@@ -94,7 +95,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5)
+CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5, dev boolean DEFAULT false)
 RETURNS TABLE (rank bigint, player_name text, duration int)
 LANGUAGE sql SECURITY DEFINER
 SET search_path = ''
@@ -108,6 +109,7 @@ AS $$
         WHERE r.race_id     = get_leaderboard.race_id
           AND r.finished_at IS NOT NULL
           AND r.aborted_at  IS NULL
+          AND p.dev         = get_leaderboard.dev
         ORDER BY r.player_id, r.duration ASC
     )
     SELECT

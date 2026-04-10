@@ -13,6 +13,7 @@ namespace SailwindRegatta
     {
         public string key;
         public string name;
+        public bool   dev;
     }
     // RPC returns a scalar UUID string directly — no wrapper needed.
 
@@ -56,8 +57,9 @@ namespace SailwindRegatta
     [Serializable]
     internal class GetLeaderboardRpcRequest
     {
-        public int race_id;
-        public int max_results;
+        public int  race_id;
+        public int  max_results;
+        public bool dev;
     }
 
     // One row returned by the get_leaderboard RPC.

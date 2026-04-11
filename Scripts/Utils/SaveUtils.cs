@@ -95,6 +95,7 @@ namespace SailwindRegatta
             }
 
             RaceManager.Instance.ActiveRun = active;
+            RaceManager.Instance.ResetPositionTracking();
             Plugin.Log.LogInfo($"Active run restored from save (race {race.DisplayName}, run id: {id}).");
         }
     }

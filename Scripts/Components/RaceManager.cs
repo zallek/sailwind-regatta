@@ -11,6 +11,9 @@ namespace SailwindRegatta
         // Set by SaveLoadPatches when a save is loaded.
         internal Run ActiveRun { get; set; }
 
+        private Vector3 _lastPlayerPosition;
+        private bool _positionInitialized;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -23,8 +26,43 @@ namespace SailwindRegatta
 
         private void Update()
         {
+            if (ActiveRun != null)
+                CheckTeleport();
+
             if (ActiveRun != null && !Sun.SunPaused())
                 ActiveRun.ElapsedSeconds += Time.unscaledDeltaTime;
+        }
+
+        private void CheckTeleport()
+        {
+            if (Refs.charController == null)
+            {
+                _positionInitialized = false;
+                return;
+            }
+
+            Vector3 currentPosition = Refs.charController.transform.position;
+
+            if (!_positionInitialized)
+            {
+                _lastPlayerPosition = currentPosition;
+                _positionInitialized = true;
+                return;
+            }
+
+            float distanceMoved = Vector3.Distance(currentPosition, _lastPlayerPosition);
+            _lastPlayerPosition = currentPosition;
+
+            if (distanceMoved > 100f)
+            {
+                Plugin.Log.LogWarning($"Teleport detected: {distanceMoved:F1}m in one frame. Aborting race.");
+                AbortRace("Teleportation detected.");
+            }
+        }
+
+        internal void ResetPositionTracking()
+        {
+            _positionInitialized = false;
         }
 
         internal void OnSteeringWheelActivated(Rudder rudder)
@@ -117,6 +155,7 @@ namespace SailwindRegatta
         {
             var startedAt = DateTime.UtcNow;
             ActiveRun = new Run(race, GameState.day, startedAt);
+            ResetPositionTracking();
 
             string raceName = ActiveRun.Race.DisplayName;
             string nextCheckpointName = ActiveRun.NextCheckpointName.ToDisplayName();

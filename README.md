@@ -1,19 +1,31 @@
 # Sailwind Regatta
 
-**Sailwind Regatta** is a competitive sailing mod for Sailwind that lets players race across the open waters. Each race follows a fixed course between ports, with checkpoints that must be passed in the correct order. Finishing times are recorded, and a global leaderboard lets sailors compare their performance and compete for the fastest crossing.
+**Sailwind Regatta** is a competitive sailing mod for Sailwind. Race across the open sea along fixed courses, hit every checkpoint in order, and see how your time stacks up against other sailors on the global leaderboard.
 
 ## Races
 
 | # | Name | Route |
 |---|------|-------|
-| 1 | The Capital Circuit | Gold Rock → Fort Astrien → Dragon's Cliffin → Gold Rock |
+| 1 | The Grand Tour | Gold Rock City → Fort Aestrin → Dragon Cliffs → Gold Rock City |
+| 2 | Aestrin Shores | Fort Aestrin → Firefly Grotto → Fey Valley → Siren Song → Eastwind → Sunspire → Fort Aestrin |
 
-## How to Race
+## How It Works
 
-Sail to the starting port of any race — your run begins the moment you arrive. Follow the checkpoints in order, and the clock stops when you cross the finish line back at the start.
+1. **Find a Race Master** — NPCs are stationed at the starting port of each race. Talk to one to see the course and the current leaderboard.
+2. **Start your run** — Confirm the start and the timer begins.
+3. **Hit every checkpoint** — Invisible trigger zones mark each port along the route. Pass through them in order.
+4. **Cross the finish line** — The timer stops when you complete the final checkpoint. Your time is submitted to the leaderboard automatically.
 
-## Planned Features
+Time is tracked in real-world seconds — no pausing or reloading your way to a faster finish. If you close the game mid-race, your run resumes where you left off when you come back.
 
-- Online leaderboard
-- More races across all regions
-- Race history and personal bests
+## Leaderboard
+
+Each race has a global leaderboard showing the top 5 fastest times. Walk up to any Race Master to see the current standings — the data is fetched before you even arrive so it's ready the moment you need it.
+
+## Installation
+
+1. Install [BepInEx 5](https://github.com/BepInEx/BepInEx) for Sailwind.
+2. Drop `SailwindRegatta.dll` into `BepInEx/plugins/SailwindRegatta/`.
+3. Launch the game.
+
+Requires an internet connection and a Steam account for leaderboard features.

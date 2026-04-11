@@ -15,7 +15,8 @@ namespace SailwindRegatta
             {
                 if (json[i] == '{')
                 {
-                    if (depth == 0) start = i;
+                    if (depth == 0)
+                        start = i;
                     depth++;
                 }
                 else if (json[i] == '}')

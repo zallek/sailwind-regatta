@@ -155,7 +155,7 @@ namespace SailwindRegatta
                 string raceName = ActiveRun.Race.DisplayName;
                 string nextCheckpointName = ActiveRun.NextCheckpointName.ToDisplayName();
                 int reached = ActiveRun.NextCheckpointIndex;
-                int total = ActiveRun.Race.RouteCheckpoints.Length - 1;
+                int total = ActiveRun.Race.RouteCheckpoints.Length;
                 Plugin.Log.LogInfo($"Race checkpoint: {raceName} - {reached}/{total}");
                 NotificationUi.instance.ShowNotification($"{raceName}\nCheckpoint {reached} / {total}\nHead to: {nextCheckpointName}", 15f);
             }

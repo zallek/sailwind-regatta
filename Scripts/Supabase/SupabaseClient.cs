@@ -11,19 +11,20 @@ namespace SailwindRegatta
     {
         private static readonly HttpClient _http = new HttpClient();
 
-        internal static async Task<string> UpsertPlayerAsync(SteamUser user)
+#if DEBUG
+        private static readonly bool dev = true;
+#else
+        private static readonly bool dev = false;
+#endif
+
+        internal static async Task<PlayerSession> UpsertPlayerAsync(SteamUser user)
         {
             try
             {
-#if DEBUG
-                bool dev = true;
-#else
-                bool dev = false;
-#endif
                 var body = JsonUtility.ToJson(
                     new UpsertPlayerRpcRequest
                     {
-                        key = ComputePlayerKey(user.SteamId, dev),
+                        key = ComputePlayerKey(user.SteamId),
                         name = user.PersonaName,
                         dev = dev,
                     }
@@ -47,7 +48,7 @@ namespace SailwindRegatta
                     return null;
                 }
 
-                return playerUuid;
+                return new PlayerSession(playerUuid);
             }
             catch (Exception ex)
             {
@@ -97,7 +98,7 @@ namespace SailwindRegatta
         }
 
         // Calls finish_run RPC. Run UUID acts as proof of ownership; trigger still enforces immutability.
-        internal static async Task<bool> FinishRunAsync(string runId, DateTime finishedAt, int durationSeconds, int? boatTypeId)
+        internal static async Task<bool> FinishRunAsync(PlayerSession session, string runId, DateTime finishedAt, int durationSeconds, int? boatTypeId)
         {
             try
             {
@@ -137,7 +138,7 @@ namespace SailwindRegatta
             }
         }
 
-        internal static async Task<bool> AbortRunAsync(string runId, DateTime abortedAt)
+        internal static async Task<bool> AbortRunAsync(PlayerSession session, string runId, DateTime abortedAt)
         {
             try
             {
@@ -160,7 +161,7 @@ namespace SailwindRegatta
             }
         }
 
-        internal static async Task<LeaderboardEntryResponse[]> GetLeaderboardAsync(int raceId, int maxResults = 5)
+        internal static async Task<LeaderboardEntryResponse[]> GetLeaderboardAsync(PlayerSession session, int raceId, int maxResults = 5)
         {
             try
             {
@@ -169,11 +170,8 @@ namespace SailwindRegatta
                     {
                         race_id = raceId,
                         max_results = maxResults,
-#if DEBUG
-                        dev = true
-#else
-                        dev = false
-#endif
+                        player_id = session.PlayerUuid,
+                        dev = dev,
                     }
                 );
 
@@ -210,17 +208,11 @@ namespace SailwindRegatta
             return req;
         }
 
-        private static string ComputePlayerKey(string steamId, bool dev = false)
+        private static string ComputePlayerKey(string steamId)
         {
-            string salt = dev ? Secrets.PlayerKeySaltDev : Secrets.PlayerKeySalt;
-            using (var sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(steamId + salt));
-                var sb = new StringBuilder(64);
-                foreach (byte b in bytes)
-                    sb.Append(b.ToString("x2"));
-                return sb.ToString();
-            }
+            var sha256 = SHA256.Create();
+            byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(steamId + Secrets.PlayerKeySalt));
+            return Convert.ToBase64String(bytes);
         }
     }
 }

@@ -123,12 +123,14 @@ namespace SailwindRegatta
             Plugin.Log.LogInfo($"Race started: {raceName}");
             NotificationUi.instance.ShowNotification($"{raceName}\nRace started!\nHead to: {nextCheckpointName}", 15f);
 
-            if (Plugin.Session != null)
-                _ = SaveRunStartedAsync(race.Id, startedAt);
+            _ = SaveRunStartedAsync(race.Id, startedAt);
         }
 
         private async Task SaveRunStartedAsync(int raceId, DateTime startedAt)
         {
+            if (Plugin.Session == null)
+                return;
+
             string id = await SupabaseClient.StartRunAsync(Plugin.Session, raceId, startedAt);
             if (id != null && ActiveRun != null)
             {
@@ -174,31 +176,34 @@ namespace SailwindRegatta
 
             ActiveRun = null;
 
-            if (Plugin.Session != null)
-            {
-                if (runId != null)
-                    _ = SaveRunFinishedAsync(runId, finishedAt, duration, boatTypeId);
-                else
-                    _ = SaveRunRetroactiveAsync(raceId, startedAt, finishedAt, duration, boatTypeId);
-            }
+            if (runId != null)
+                _ = SaveRunFinishedAsync(runId, finishedAt, duration, boatTypeId);
+            else
+                _ = SaveRunRetroactiveAsync(raceId, startedAt, finishedAt, duration, boatTypeId);
         }
 
         private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration, int? boatTypeId)
         {
-            var success = await SupabaseClient.FinishRunAsync(runId, finishedAt, duration, boatTypeId);
+            if (Plugin.Session == null)
+                return;
+
+            var success = await SupabaseClient.FinishRunAsync(Plugin.Session, runId, finishedAt, duration, boatTypeId);
             if (success)
                 Plugin.Log.LogDebug($"Run finished on Supabase. Run id: {runId}");
         }
 
         private async Task SaveRunRetroactiveAsync(int raceId, DateTime startedAt, DateTime finishedAt, int duration, int? boatTypeId)
         {
+            if (Plugin.Session == null)
+                return;
+
             string runId = await SupabaseClient.StartRunAsync(Plugin.Session, raceId, startedAt);
             if (runId == null)
             {
                 Plugin.Log.LogError("Retroactive run start failed; result not saved online.");
                 return;
             }
-            var success = await SupabaseClient.FinishRunAsync(runId, finishedAt, duration, boatTypeId);
+            var success = await SupabaseClient.FinishRunAsync(Plugin.Session, runId, finishedAt, duration, boatTypeId);
             if (success)
                 Plugin.Log.LogDebug($"Run saved retroactively on Supabase. Run id: {runId}");
         }
@@ -215,13 +220,16 @@ namespace SailwindRegatta
             NotificationUi.instance.ShowNotification($"{raceName}\nRace aborted\n{reason}", 15f);
             ActiveRun = null;
 
-            if (Plugin.Session != null && runId != null)
+            if (runId != null)
                 _ = SaveRunAbortedAsync(runId, abortedAt);
         }
 
         private async Task SaveRunAbortedAsync(string runId, DateTime abortedAt)
         {
-            var success = await SupabaseClient.AbortRunAsync(runId, abortedAt);
+            if (Plugin.Session == null)
+                return;
+
+            var success = await SupabaseClient.AbortRunAsync(Plugin.Session, runId, abortedAt);
             if (success)
                 Plugin.Log.LogDebug($"Run aborted on Supabase. Run id: {runId}");
         }

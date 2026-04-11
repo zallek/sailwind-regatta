@@ -60,14 +60,14 @@ namespace SailwindRegatta
                     return;
                 }
 
-                var playerUuid = await SupabaseClient.UpsertPlayerAsync(steamUser);
-                if (playerUuid == null)
+                var playerSession = await SupabaseClient.UpsertPlayerAsync(steamUser);
+                if (playerSession == null)
                 {
-                    Log.LogWarning("Could not create online player. Online mode disabled.");
+                    Log.LogWarning("Could not create online session. Online mode disabled.");
                     return;
                 }
 
-                Session = new PlayerSession(playerUuid);
+                Session = playerSession;
                 Log.LogInfo($"Online session initialized. PlayerUUID: {Session.PlayerUuid}");
             }
             catch (System.Exception ex)

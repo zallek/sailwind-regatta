@@ -61,6 +61,7 @@ namespace SailwindRegatta
         public int race_id;
         public int max_results;
         public bool dev;
+        public string player_id; // null → top 5 only; set → also appends player row if outside top 5
     }
 
     // One row returned by the get_leaderboard RPC.

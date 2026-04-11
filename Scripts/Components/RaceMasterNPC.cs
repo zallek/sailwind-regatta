@@ -152,11 +152,14 @@ namespace SailwindRegatta
 
         private async void FetchLeaderboard()
         {
+            if (Plugin.Session == null)
+                return;
+
             if (_leaderboardData != null || _leaderboardFetching)
                 return;
 
             _leaderboardFetching = true;
-            _leaderboardData = await SupabaseClient.GetLeaderboardAsync(_race.Id);
+            _leaderboardData = await SupabaseClient.GetLeaderboardAsync(Plugin.Session, _race.Id);
             _leaderboardFetching = false;
             _ui.LeaderboardData = _leaderboardData;
         }

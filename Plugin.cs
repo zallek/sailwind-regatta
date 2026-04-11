@@ -2,7 +2,6 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using BepInEx;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 
@@ -18,7 +17,7 @@ namespace SailwindRegatta
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
         internal static PlayerSession Session { get; set; }
-        internal static ConfigEntry<bool> UseInGameTime { get; private set; }
+
 
         private void Awake()
         {
@@ -29,13 +28,6 @@ namespace SailwindRegatta
             }
             Instance = this;
             Log = Logger;
-
-            UseInGameTime = Config.Bind(
-                "Display",
-                "UseInGameTime",
-                true,
-                "When true, run durations are displayed as in-game time instead of real-world time."
-            );
 
             // Required for HTTPS on Mono/.NET 4.8 in Unity.
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;

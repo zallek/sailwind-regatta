@@ -102,7 +102,7 @@ namespace SailwindRegatta
             PlayerSession session,
             string runId,
             DateTime finishedAt,
-            long durationSeconds,
+            long durationMinutes,
             int? boatTypeId
         )
         {
@@ -114,7 +114,7 @@ namespace SailwindRegatta
                         {
                             run_id = runId,
                             finished_at = finishedAt.ToString("o"),
-                            duration = durationSeconds,
+                            duration_minutes = durationMinutes,
                             boat_type_id = boatTypeId.Value,
                         }
                     )
@@ -123,7 +123,7 @@ namespace SailwindRegatta
                         {
                             run_id = runId,
                             finished_at = finishedAt.ToString("o"),
-                            duration = durationSeconds,
+                            duration_minutes = durationMinutes,
                         }
                     );
 

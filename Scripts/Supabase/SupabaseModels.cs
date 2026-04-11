@@ -30,7 +30,7 @@ namespace SailwindRegatta
     {
         public string run_id;
         public string finished_at; // ISO 8601 UTC string
-        public long duration; // real-world seconds
+        public long duration_minutes;
         public int boat_type_id; // SaveableObject.sceneIndex
     }
 
@@ -40,7 +40,7 @@ namespace SailwindRegatta
     {
         public string run_id;
         public string finished_at;
-        public long duration;
+        public long duration_minutes;
     }
 
     // Used by the abort_run RPC — field names must match the SQL function parameter names.
@@ -67,6 +67,6 @@ namespace SailwindRegatta
     {
         public int rank;
         public string player_name;
-        public long duration; // real-world seconds
+        public long duration_minutes;
     }
 }

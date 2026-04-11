@@ -15,7 +15,7 @@ namespace SailwindRegatta
         public string id; // Supabase run id; empty if StartRunAsync hasn't resolved yet
         public string startedAtUtc; // ISO 8601 round-trip string of Run.StartedAt
         public int boatTypeId; // -1 when BoatTypeId is null (JsonUtility cannot serialize int?)
-        public double elapsedSeconds;
+        public double elapsedHours;
     }
 
     internal static class SaveUtils
@@ -34,7 +34,7 @@ namespace SailwindRegatta
                 payload.id = active.Id ?? string.Empty;
                 payload.startedAtUtc = active.StartedAt.ToString("o");
                 payload.boatTypeId = active.BoatTypeId ?? -1;
-                payload.elapsedSeconds = active.ElapsedSeconds;
+                payload.elapsedHours = active.ElapsedHours;
             }
 
             string json = JsonUtility.ToJson(payload);
@@ -85,7 +85,7 @@ namespace SailwindRegatta
                 NextCheckpointIndex = payload.checkpointIndex,
                 Id = id,
                 BoatTypeId = boatTypeId,
-                ElapsedSeconds = payload.elapsedSeconds,
+                ElapsedHours = payload.elapsedHours,
             };
 
             if (RaceManager.Instance == null)

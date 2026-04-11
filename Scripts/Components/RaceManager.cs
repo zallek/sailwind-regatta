@@ -29,13 +29,18 @@ namespace SailwindRegatta
             if (ActiveRun != null)
                 CheckTeleport();
 
+            // Mirror the Sun clock: Time.deltaTime * timescale = in-game hours per frame.
+            // This ensures sleep fast-forward is counted fairly — the timer advances
+            // proportionally to the in-game hours that pass, not real wall-clock time.
             if (ActiveRun != null && !Sun.SunPaused())
-                ActiveRun.ElapsedSeconds += Time.unscaledDeltaTime;
+                ActiveRun.ElapsedHours += Time.deltaTime * Sun.sun.timescale;
         }
 
         private void CheckTeleport()
         {
-            if (Refs.charController == null)
+            // Skip during sleep — the boat moves legitimately via physics fast-forward
+            // and could easily exceed the threshold. Re-seed position on wake.
+            if (Refs.charController == null || GameState.sleeping)
             {
                 _positionInitialized = false;
                 return;
@@ -208,7 +213,7 @@ namespace SailwindRegatta
             int? boatTypeId = ActiveRun.BoatTypeId;
             var startedAt = ActiveRun.StartedAt;
             var finishedAt = DateTime.UtcNow;
-            long duration = (long)ActiveRun.ElapsedSeconds;
+            long duration = (long)(ActiveRun.ElapsedHours * 60.0);
 
             Plugin.Log.LogInfo($"Race finished: {raceName}");
             NotificationUi.instance.ShowNotification($"{raceName}\nRace finished!\n{TimeUtils.FormatDuration(duration)}", 15f);

@@ -21,8 +21,10 @@ namespace SailwindRegatta
         // SaveableObject.sceneIndex on the hull; null until first steering-wheel use this run.
         public int? BoatTypeId { get; set; }
 
-        // Accumulated real-world play time in seconds. Excludes paused and closed-game time.
-        public double ElapsedSeconds { get; set; }
+        // Accumulated in-game time in hours.
+        // Uses the same formula as the Sun clock (Time.deltaTime * Sun.timescale),
+        // so sleep fast-forward is counted proportionally — no free distance.
+        public double ElapsedHours { get; set; }
 
         public CheckpointName NextCheckpointName => Race.RouteCheckpoints[NextCheckpointIndex];
         public bool IsFinished => NextCheckpointIndex >= Race.RouteCheckpoints.Length;

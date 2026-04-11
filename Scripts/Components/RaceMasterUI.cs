@@ -105,7 +105,7 @@ namespace SailwindRegatta
                 foreach (var e in LeaderboardData)
                 {
                     string playerName = e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name;
-                    sb.AppendLine($"{e.rank}. {playerName}  {TimeUtils.FormatDuration(e.duration)}");
+                    sb.AppendLine($"{e.rank}. {playerName}  {TimeUtils.FormatDuration(e.duration_minutes)}");
                 }
                 _leaderboardText.text = sb.ToString().TrimEnd();
             }

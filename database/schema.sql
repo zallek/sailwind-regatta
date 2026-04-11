@@ -20,7 +20,7 @@ CREATE TABLE run (
     started_at   timestamptz NOT NULL,
     finished_at  timestamptz,     -- NULL while in progress
     aborted_at   timestamptz,     -- NULL unless aborted
-    duration     bigint,             -- real-world seconds, NULL until finish
+    duration_minutes bigint,          -- in-game minutes, NULL until finish
     created_at   timestamptz NOT NULL DEFAULT now()
 );
 
@@ -46,7 +46,7 @@ AS $$
     RETURNING id;
 $$;
 
-CREATE OR REPLACE FUNCTION finish_run(run_id uuid, finished_at timestamptz, duration bigint, boat_type_id int DEFAULT NULL)
+CREATE OR REPLACE FUNCTION finish_run(run_id uuid, finished_at timestamptz, duration_minutes bigint, boat_type_id int DEFAULT NULL)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
 AS $$
@@ -54,9 +54,9 @@ DECLARE
     n int;
 BEGIN
     UPDATE public.run AS t
-    SET finished_at  = $2,
-        duration     = $3,
-        boat_type_id = $4
+    SET finished_at      = $2,
+        duration_minutes = $3,
+        boat_type_id     = $4
     WHERE t.id = $1 AND t.finished_at IS NULL AND t.aborted_at IS NULL;
     GET DIAGNOSTICS n = ROW_COUNT;
     IF n = 0 THEN
@@ -83,7 +83,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5, dev boolean DEFAULT false, player_id uuid DEFAULT NULL)
-RETURNS TABLE (rank bigint, player_name text, duration bigint)
+RETURNS TABLE (rank int, player_name text, duration_minutes bigint)
 LANGUAGE sql SECURITY DEFINER
 SET search_path = ''
 AS $$
@@ -91,26 +91,26 @@ AS $$
         SELECT DISTINCT ON (r.player_id)
             r.player_id,
             p.name AS player_name,
-            r.duration
+            r.duration_minutes
         FROM public.run r
         JOIN public.player p ON p.id = r.player_id
         WHERE r.race_id     = get_leaderboard.race_id
           AND r.finished_at IS NOT NULL
           AND r.aborted_at  IS NULL
           AND p.dev         = get_leaderboard.dev
-        ORDER BY r.player_id, r.duration ASC
+        ORDER BY r.player_id, r.duration_minutes ASC
     ),
     ranked AS (
         SELECT
             r.player_id,
-            ROW_NUMBER() OVER (ORDER BY r.duration ASC) AS rank,
+            ROW_NUMBER() OVER (ORDER BY r.duration_minutes ASC) AS rank,
             r.player_name,
-            r.duration
+            r.duration_minutes
         FROM best_runs r
     )
-    SELECT rank, player_name, duration FROM ranked WHERE rank <= get_leaderboard.max_results
+    SELECT rank, player_name, duration_minutes FROM ranked WHERE rank <= get_leaderboard.max_results
     UNION ALL
-    SELECT rank, player_name, duration FROM ranked
+    SELECT rank, player_name, duration_minutes FROM ranked
         WHERE get_leaderboard.player_id IS NOT NULL
           AND player_id = get_leaderboard.player_id
           AND rank > get_leaderboard.max_results

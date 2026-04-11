@@ -13,7 +13,7 @@ namespace SailwindRegatta
         {
             _checkpoint = checkpoint;
             transform.localPosition = checkpoint.Offset;
-            transform.localScale = Vector3.one * checkpoint.Radius * 2f;
+            transform.localScale = new Vector3(checkpoint.Radius * 2f, 50f, checkpoint.Radius * 2f);
 
             // SphereCollider radius = 0.5 on this scaled object → world radius = 0.5 * localScale = checkpoint.Radius.
             var col = gameObject.AddComponent<SphereCollider>();

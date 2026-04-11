@@ -70,7 +70,7 @@ namespace SailwindRegatta
             if (port.GetComponentInChildren<CheckpointArea>() != null)
                 return;
 
-            var child = new GameObject("CheckpointArea");
+            var child = new GameObject($"CheckpointArea {checkpoint.Name.ToDisplayName()}");
             child.transform.SetParent(port.transform, worldPositionStays: false);
             child.AddComponent<CheckpointArea>().Init(checkpoint);
 

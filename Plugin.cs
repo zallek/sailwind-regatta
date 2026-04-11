@@ -45,8 +45,6 @@ namespace SailwindRegatta
             gameObject.AddComponent<RaceManager>();
 
             _ = InitOnlineSessionAsync();
-
-            Log.LogInfo($"{PLUGIN_NAME} v{PLUGIN_VERSION} loaded.");
         }
 
         private static async Task InitOnlineSessionAsync()

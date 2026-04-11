@@ -18,6 +18,13 @@ namespace SailwindRegatta
                 avatar: 2,
                 raceId: 1
             ),
+            new RaceMaster(
+                portName: PortName.FortAestrin,
+                position: new Vector3(27f, -0.54f, 2f),
+                eulerAngles: new Vector3(0f, 320f, 0f),
+                avatar: 2,
+                raceId: 2
+            ),
         };
     }
 }

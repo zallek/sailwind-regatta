@@ -98,7 +98,13 @@ namespace SailwindRegatta
         }
 
         // Calls finish_run RPC. Run UUID acts as proof of ownership; trigger still enforces immutability.
-        internal static async Task<bool> FinishRunAsync(PlayerSession session, string runId, DateTime finishedAt, int durationSeconds, int? boatTypeId)
+        internal static async Task<bool> FinishRunAsync(
+            PlayerSession session,
+            string runId,
+            DateTime finishedAt,
+            int durationSeconds,
+            int? boatTypeId
+        )
         {
             try
             {

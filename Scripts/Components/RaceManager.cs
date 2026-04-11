@@ -169,7 +169,7 @@ namespace SailwindRegatta
             int? boatTypeId = ActiveRun.BoatTypeId;
             var startedAt = ActiveRun.StartedAt;
             var finishedAt = DateTime.UtcNow;
-            int duration = (int)ActiveRun.ElapsedSeconds;
+            long duration = (long)ActiveRun.ElapsedSeconds;
 
             Plugin.Log.LogInfo($"Race finished: {raceName}");
             NotificationUi.instance.ShowNotification($"{raceName}\nRace finished!\n{TimeUtils.FormatDuration(duration)}", 15f);
@@ -182,7 +182,7 @@ namespace SailwindRegatta
                 _ = SaveRunRetroactiveAsync(raceId, startedAt, finishedAt, duration, boatTypeId);
         }
 
-        private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, int duration, int? boatTypeId)
+        private async Task SaveRunFinishedAsync(string runId, DateTime finishedAt, long duration, int? boatTypeId)
         {
             if (Plugin.Session == null)
                 return;
@@ -192,7 +192,7 @@ namespace SailwindRegatta
                 Plugin.Log.LogDebug($"Run finished on Supabase. Run id: {runId}");
         }
 
-        private async Task SaveRunRetroactiveAsync(int raceId, DateTime startedAt, DateTime finishedAt, int duration, int? boatTypeId)
+        private async Task SaveRunRetroactiveAsync(int raceId, DateTime startedAt, DateTime finishedAt, long duration, int? boatTypeId)
         {
             if (Plugin.Session == null)
                 return;

@@ -102,7 +102,7 @@ namespace SailwindRegatta
             PlayerSession session,
             string runId,
             DateTime finishedAt,
-            int durationSeconds,
+            long durationSeconds,
             int? boatTypeId
         )
         {
@@ -192,9 +192,7 @@ namespace SailwindRegatta
                 }
 
                 // PostgREST returns a JSON array at the root — wrap it for JsonUtility.
-                var wrapper = JsonUtility.FromJson<LeaderboardWrapper>("{\"items\":" + raw + "}");
-                // JsonUtility leaves empty [] as null; callers expect a real zero-length array.
-                return wrapper?.items ?? Array.Empty<LeaderboardEntryResponse>();
+                return JsonUtils.FromJsonArray<LeaderboardEntryResponse>(raw);
             }
             catch (Exception ex)
             {

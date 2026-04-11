@@ -87,6 +87,7 @@
     <Compile Include="Scripts\Supabase\SupabaseConfig.cs" />
     <Compile Include="Scripts\Supabase\SupabaseModels.cs" />
     <Compile Include="Scripts\Utils\BoatTypeUtils.cs" />
+    <Compile Include="Scripts\Utils\JsonUtils.cs" />
     <Compile Include="Scripts\Utils\SaveUtils.cs" />
     <Compile Include="Scripts\Utils\SteamUtils.cs" />
     <Compile Include="Scripts\Utils\TimeUtils.cs" />

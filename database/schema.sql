@@ -20,7 +20,7 @@ CREATE TABLE run (
     started_at   timestamptz NOT NULL,
     finished_at  timestamptz,     -- NULL while in progress
     aborted_at   timestamptz,     -- NULL unless aborted
-    duration     int,             -- real-world seconds, NULL until finish
+    duration     bigint,             -- real-world seconds, NULL until finish
     created_at   timestamptz NOT NULL DEFAULT now()
 );
 
@@ -46,7 +46,7 @@ AS $$
     RETURNING id;
 $$;
 
-CREATE OR REPLACE FUNCTION finish_run(run_id uuid, finished_at timestamptz, duration int, boat_type_id int DEFAULT NULL)
+CREATE OR REPLACE FUNCTION finish_run(run_id uuid, finished_at timestamptz, duration bigint, boat_type_id int DEFAULT NULL)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = ''
 AS $$
@@ -83,7 +83,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5, dev boolean DEFAULT false, player_id uuid DEFAULT NULL)
-RETURNS TABLE (rank bigint, player_name text, duration int)
+RETURNS TABLE (rank bigint, player_name text, duration bigint)
 LANGUAGE sql SECURITY DEFINER
 SET search_path = ''
 AS $$

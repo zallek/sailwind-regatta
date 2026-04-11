@@ -15,7 +15,7 @@ namespace SailwindRegatta
         public string id; // Supabase run id; empty if StartRunAsync hasn't resolved yet
         public string startedAtUtc; // ISO 8601 round-trip string of Run.StartedAt
         public int boatTypeId; // -1 when BoatTypeId is null (JsonUtility cannot serialize int?)
-        public float elapsedSeconds;
+        public double elapsedSeconds;
     }
 
     internal static class SaveUtils

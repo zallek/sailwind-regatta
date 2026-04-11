@@ -2,7 +2,7 @@ namespace SailwindRegatta
 {
     internal static class TimeUtils
     {
-        internal static string FormatDuration(int seconds)
+        internal static string FormatDuration(long seconds)
         {
             if (Plugin.UseInGameTime.Value)
             {
@@ -12,8 +12,8 @@ namespace SailwindRegatta
                 int minutes = (int)((inGameHours % 1f) * 60f);
                 return $"{days}d {hours:D2}h {minutes:D2}m";
             }
-            int m = seconds / 60;
-            int s = seconds % 60;
+            int m = (int)(seconds / 60);
+            int s = (int)(seconds % 60);
             return $"{m}:{s:D2}";
         }
     }

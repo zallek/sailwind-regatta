@@ -1,8 +1,5 @@
 using System;
 
-// JsonUtility assigns these fields via reflection — suppress the "never assigned" warning.
-#pragma warning disable CS0649
-
 namespace SailwindRegatta
 {
     // Field names must exactly match PostgREST column names (snake_case).
@@ -33,7 +30,7 @@ namespace SailwindRegatta
     {
         public string run_id;
         public string finished_at; // ISO 8601 UTC string
-        public int duration; // real-world seconds
+        public long duration; // real-world seconds
         public int boat_type_id; // SaveableObject.sceneIndex
     }
 
@@ -43,7 +40,7 @@ namespace SailwindRegatta
     {
         public string run_id;
         public string finished_at;
-        public int duration;
+        public long duration;
     }
 
     // Used by the abort_run RPC — field names must match the SQL function parameter names.
@@ -70,14 +67,6 @@ namespace SailwindRegatta
     {
         public int rank;
         public string player_name;
-        public int duration; // real-world seconds
-    }
-
-    // JsonUtility cannot deserialise a root-level JSON array.
-    // Wrap the raw response string as {"items":[...]} before parsing.
-    [Serializable]
-    internal class LeaderboardWrapper
-    {
-        public LeaderboardEntryResponse[] items;
+        public long duration; // real-world seconds
     }
 }

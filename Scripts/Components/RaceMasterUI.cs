@@ -42,7 +42,7 @@ namespace SailwindRegatta
             // Leaderboard panel: child offset to the right, same plane as action text.
             _leaderboardGO = new GameObject();
             _leaderboardGO.transform.SetParent(transform, worldPositionStays: false);
-            _leaderboardGO.transform.localPosition = new Vector3(0.9f, 0f, 0f);
+            _leaderboardGO.transform.localPosition = new Vector3(1f, 0f, 0f);
 
             _leaderboardText = _leaderboardGO.AddComponent<TextMesh>();
             _leaderboardText.alignment = TextAlignment.Left;

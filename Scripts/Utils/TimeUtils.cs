@@ -10,7 +10,7 @@ namespace SailwindRegatta
                 int days = (int)(inGameHours / 24f);
                 int hours = (int)(inGameHours % 24f);
                 int minutes = (int)((inGameHours % 1f) * 60f);
-                return $"{days} days {hours} hours {minutes} minutes";
+                return $"{days}d {hours:D2}h {minutes:D2}m";
             }
             int m = seconds / 60;
             int s = seconds % 60;

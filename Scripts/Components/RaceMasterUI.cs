@@ -1,4 +1,5 @@
 using System.Text;
+using cakeslice;
 using UnityEngine;
 
 namespace SailwindRegatta
@@ -19,14 +20,14 @@ namespace SailwindRegatta
         internal void Init(Race race)
         {
             _race = race;
-            transform.localPosition = new Vector3(0f, 1.5f, 0.3f);
+            transform.localPosition = new Vector3(0f, 1.4f, 0.3f);
             transform.localEulerAngles = new Vector3(0f, 180f, 0f);
 
-            _actionTextGO = new GameObject("ActionText");
+            _actionTextGO = new GameObject();
             _actionTextGO.transform.SetParent(transform, worldPositionStays: false);
             _actionText = _actionTextGO.AddComponent<TextMesh>();
             _actionText.alignment = TextAlignment.Center;
-            _actionText.anchor = TextAnchor.UpperCenter;
+            _actionText.anchor = TextAnchor.MiddleCenter;
             _actionText.characterSize = 0.03f;
             _actionText.fontSize = 32;
             _actionTextGO.SetActive(false);
@@ -35,17 +36,17 @@ namespace SailwindRegatta
             // GoPointerButton requires a Renderer — TextMesh auto-adds MeshRenderer, so it's satisfied.
             var clickCol = _actionTextGO.AddComponent<BoxCollider>();
             clickCol.center = Vector3.zero;
-            clickCol.size = new Vector3(0.4f, 0.3f, 0.05f);
+            clickCol.size = new Vector3(0.8f, 0.3f, 0.05f);
             _actionTextGO.AddComponent<RaceMasterButton>().Init(_race);
 
             // Leaderboard panel: child offset to the right, same plane as action text.
-            _leaderboardGO = new GameObject("Leaderboard");
+            _leaderboardGO = new GameObject();
             _leaderboardGO.transform.SetParent(transform, worldPositionStays: false);
-            _leaderboardGO.transform.localPosition = new Vector3(0.6f, 0f, 0f);
+            _leaderboardGO.transform.localPosition = new Vector3(0.9f, 0f, 0f);
 
             _leaderboardText = _leaderboardGO.AddComponent<TextMesh>();
             _leaderboardText.alignment = TextAlignment.Left;
-            _leaderboardText.anchor = TextAnchor.UpperLeft;
+            _leaderboardText.anchor = TextAnchor.MiddleCenter;
             _leaderboardText.characterSize = 0.03f;
             _leaderboardText.fontSize = 32;
             _leaderboardGO.SetActive(false);
@@ -114,11 +115,26 @@ namespace SailwindRegatta
     internal class RaceMasterButton : GoPointerButton
     {
         private Race _race;
+        private TextMesh _text;
+        private Outline _outline;
 
         internal void Init(Race race)
         {
             _race = race;
-            forceDisableRedOutline = true;
+        }
+
+        public override void Start()
+        {
+            base.Start(); // adds the Outline component
+            _text = GetComponent<TextMesh>();
+            _outline = GetComponent<Outline>();
+        }
+
+        public override void ExtraLateUpdate()
+        {
+            if (_outline != null)
+                _outline.enabled = false;
+            _text.fontStyle = IsLookedAt() ? FontStyle.Bold : FontStyle.Normal;
         }
 
         public override void OnActivate()

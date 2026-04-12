@@ -52,12 +52,13 @@ namespace SailwindRegatta
 
         private void Update()
         {
-            if (ActiveRun != null)
-                CheckTeleport();
+            CheckTeleport();
+            CheckTimescale();
+            UpdateElapsedHours();
+        }
 
-            if (ActiveRun != null)
-                CheckTimescale();
-
+        private void UpdateElapsedHours()
+        {
             // Mirror the Sun clock: Time.deltaTime * timescale = in-game hours per frame.
             // This ensures sleep fast-forward is counted fairly — the timer advances
             // proportionally to the in-game hours that pass, not real wall-clock time.
@@ -67,7 +68,41 @@ namespace SailwindRegatta
 
         private void CheckTeleport()
         {
-            // Skip during sleep, load, and the first frames after load.
+            if (ActiveRun == null)
+                return;
+
+            // Several game events legitimately move the player large distances in a single
+            // frame. We guard against each one to avoid false positives:
+            //
+            // - ovrCameraRig / FloatingOriginManager not ready:
+            //     Happens on the very first frames after scene load before all managers
+            //     initialize. Skip and reset so we re-seed once everything is stable.
+            //
+            // - GameState.sleeping:
+            //     When the player sleeps in a port or on a boat the game fast-forwards time
+            //     (Time.timeScale = 16, Sun.timescale *= 9). The CharacterController may be
+            //     repositioned as the boat drifts. Not a teleport.
+            //
+            // - GameState.currentlyLoading / justStarted:
+            //     Save loading restores the player to their saved world position in one frame,
+            //     which can be hundreds of metres from the previous position. Not a teleport.
+            //
+            // Camera position instead of CharacterController position:
+            //     Using ovrCameraRig instead of charController is the key insight. When the
+            //     player embarks or disembarks a boat, PlayerEmbarkerNew reparents the
+            //     CharacterController to/from boat.walkCol across several frames, causing its
+            //     world-space coordinates to jump discontinuously (we measured ~293 m).
+            //     The camera rig is never reparented — it always sits in the same hierarchy —
+            //     so its position only ever changes by what the player actually moved.
+            //
+            // FloatingOriginManager origin compensation:
+            //     FloatingOriginManager periodically recenters the world by translating every
+            //     child of shiftingWorld (including the player and all boats) by a shift
+            //     vector, then accumulates that shift in outCurrentOffset. Without compensation
+            //     this shift looks like a large teleport. Subtracting the delta of
+            //     outCurrentOffset isolates true player movement from world recentering.
+            //     This also covers the "transition between port sea and open sea" zones, which
+            //     trigger a recentering when the player crosses the boundary.
             if (
                 Refs.ovrCameraRig == null
                 || FloatingOriginManager.instance == null
@@ -104,8 +139,16 @@ namespace SailwindRegatta
             }
         }
 
+        internal void ResetPositionTracking()
+        {
+            _positionInitialized = false;
+        }
+
         private void CheckTimescale()
         {
+            if (ActiveRun == null)
+                return;
+
             if (!IsTimescaleValid())
             {
                 Plugin.Log.LogWarning($"Timescale tampering detected: initialTimescale={Sun.sun.initialTimescale:F4}. Aborting race.");
@@ -117,11 +160,6 @@ namespace SailwindRegatta
         {
             // Epsilon of 0.001f guards against floating-point drift while catching any real modification.
             return Mathf.Abs(Sun.sun.initialTimescale - 0.008f) < 0.001f;
-        }
-
-        internal void ResetPositionTracking()
-        {
-            _positionInitialized = false;
         }
 
         internal void OnSteeringWheelActivated(Rudder rudder)

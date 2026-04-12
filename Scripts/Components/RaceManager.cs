@@ -54,12 +54,14 @@ namespace SailwindRegatta
             if (ActiveRun != null)
                 CheckTeleport();
 
+            if (ActiveRun != null)
+                CheckTimescale();
+
             // Mirror the Sun clock: Time.deltaTime * timescale = in-game hours per frame.
             // This ensures sleep fast-forward is counted fairly — the timer advances
             // proportionally to the in-game hours that pass, not real wall-clock time.
             if (ActiveRun != null && !Sun.SunPaused())
                 ActiveRun.ElapsedHours += Time.deltaTime * Sun.sun.timescale;
-            // timescale can be modified by players (check that initialTimescale is 1.0) !!!
         }
 
         private void CheckTeleport()
@@ -93,6 +95,22 @@ namespace SailwindRegatta
                 Plugin.Log.LogWarning($"Teleport detected: {distanceMoved:F1}m in one frame. Aborting race.");
                 AbortRace("Teleportation detected.");
             }
+        }
+
+        private void CheckTimescale()
+        {
+            if (!IsTimescaleValid())
+            {
+                Plugin.Log.LogWarning($"Timescale tampering detected: initialTimescale={Sun.sun.initialTimescale:F4}. Aborting race.");
+                AbortRace("Time speed was modified.");
+            }
+        }
+
+        private static bool IsTimescaleValid()
+        {
+            // Catches both speedups (> 1) and slowdowns (< 1).
+            // Epsilon of 0.001f guards against floating-point drift while catching any real modification.
+            return Mathf.Abs(Sun.sun.initialTimescale - 1f) < 0.001f;
         }
 
         internal void ResetPositionTracking()
@@ -188,6 +206,12 @@ namespace SailwindRegatta
         // Called by RaceMasterNPC when the player clicks the NPC to start a race.
         internal void StartRace(Race race)
         {
+            if (!IsTimescaleValid())
+            {
+                NotificationUi.instance.ShowNotification("Cannot start race\nTime speed is modified.", 8f);
+                return;
+            }
+
             var startedAt = DateTime.UtcNow;
             ActiveRun = new Run(race, GameState.day, startedAt);
             ResetPositionTracking();

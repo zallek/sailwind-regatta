@@ -13,6 +13,7 @@ namespace SailwindRegatta
 
         private Vector3 _lastPlayerPosition;
         private bool _positionInitialized;
+        private Transform _lastKnownBoat;
 
         private GUIStyle _timerStyle;
 
@@ -66,16 +67,22 @@ namespace SailwindRegatta
 
         private void CheckTeleport()
         {
-            // Problems
-            // When we embark on a boat, the game teleports the player for some reason.
-            // When the game loads, it always
+            // Known bugs
+            // - Doesn't detect teleports from a boat
 
-            // Skip during sleep — the boat moves legitimately via physics fast-forward
-            // and could easily exceed the threshold. Re-seed position on wake.
-            if (Refs.charController == null || GameState.sleeping)
+            // Skip during sleep, load, and the first frames after load.
+            if (Refs.charController == null || GameState.sleeping || GameState.currentlyLoading || GameState.justStarted)
             {
                 _positionInitialized = false;
                 return;
+            }
+
+            // Re-seed when the player boards or leaves a boat — the world-space
+            // position snaps to the embark point, which is not a cheat teleport.
+            if (GameState.currentBoat != _lastKnownBoat)
+            {
+                _lastKnownBoat = GameState.currentBoat;
+                _positionInitialized = false;
             }
 
             Vector3 currentPosition = Refs.charController.transform.position;
@@ -108,9 +115,8 @@ namespace SailwindRegatta
 
         private static bool IsTimescaleValid()
         {
-            // Catches both speedups (> 1) and slowdowns (< 1).
             // Epsilon of 0.001f guards against floating-point drift while catching any real modification.
-            return Mathf.Abs(Sun.sun.initialTimescale - 1f) < 0.001f;
+            return Mathf.Abs(Sun.sun.initialTimescale - 0.008f) < 0.001f;
         }
 
         internal void ResetPositionTracking()

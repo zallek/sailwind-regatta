@@ -61,7 +61,7 @@ namespace SailwindRegatta
                 }
 
                 Session = playerSession;
-                Log.LogInfo($"Online session initialized. PlayerUUID: {Session.PlayerUuid}");
+                Log.LogInfo($"Online session initialized. Player name: {steamUser.PersonaName}");
             }
             catch (System.Exception ex)
             {

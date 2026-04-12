@@ -2,6 +2,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 
@@ -17,7 +18,7 @@ namespace SailwindRegatta
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }
         internal static PlayerSession Session { get; set; }
-
+        internal static ConfigEntry<bool> ShowTimer { get; private set; }
 
         private void Awake()
         {
@@ -28,6 +29,8 @@ namespace SailwindRegatta
             }
             Instance = this;
             Log = Logger;
+
+            ShowTimer = Config.Bind("Display", "ShowTimer", true, "Show the active race timer in the bottom-right corner of the screen.");
 
             // Required for HTTPS on Mono/.NET 4.8 in Unity.
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;

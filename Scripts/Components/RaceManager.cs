@@ -14,6 +14,8 @@ namespace SailwindRegatta
         private Vector3 _lastPlayerPosition;
         private bool _positionInitialized;
 
+        private GUIStyle _timerStyle;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -22,6 +24,29 @@ namespace SailwindRegatta
                 return;
             }
             Instance = this;
+        }
+
+        private void OnGUI()
+        {
+            if (ActiveRun == null || !Plugin.ShowTimer.Value)
+                return;
+
+            if (_timerStyle == null)
+            {
+                _timerStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 20,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleRight,
+                    normal = { textColor = Color.white },
+                };
+            }
+
+            long minutes = (long)(ActiveRun.ElapsedHours * 60.0);
+            string text = $"{ActiveRun.Race.DisplayName}\n{TimeUtils.FormatDuration(minutes)}";
+            float width = 220f;
+            float height = 50f;
+            GUI.Label(new Rect(Screen.width - width - 12f, Screen.height - height - 12f, width, height), text, _timerStyle);
         }
 
         private void Update()
@@ -34,10 +59,15 @@ namespace SailwindRegatta
             // proportionally to the in-game hours that pass, not real wall-clock time.
             if (ActiveRun != null && !Sun.SunPaused())
                 ActiveRun.ElapsedHours += Time.deltaTime * Sun.sun.timescale;
+            // timescale can be modified by players (check that initialTimescale is 1.0) !!!
         }
 
         private void CheckTeleport()
         {
+            // Problems
+            // When we embark on a boat, the game teleports the player for some reason.
+            // When the game loads, it always
+
             // Skip during sleep — the boat moves legitimately via physics fast-forward
             // and could easily exceed the threshold. Re-seed position on wake.
             if (Refs.charController == null || GameState.sleeping)

@@ -12,8 +12,8 @@ namespace SailwindRegatta
         internal Run ActiveRun { get; set; }
 
         private Vector3 _lastPlayerPosition;
+        private Vector3 _lastOriginOffset;
         private bool _positionInitialized;
-        private Transform _lastKnownBoat;
 
         private GUIStyle _timerStyle;
 
@@ -67,35 +67,35 @@ namespace SailwindRegatta
 
         private void CheckTeleport()
         {
-            // Known bugs
-            // - Doesn't detect teleports from a boat
-
             // Skip during sleep, load, and the first frames after load.
-            if (Refs.charController == null || GameState.sleeping || GameState.currentlyLoading || GameState.justStarted)
+            if (
+                Refs.ovrCameraRig == null
+                || FloatingOriginManager.instance == null
+                || GameState.sleeping
+                || GameState.currentlyLoading
+                || GameState.justStarted
+            )
             {
                 _positionInitialized = false;
                 return;
             }
 
-            // Re-seed when the player boards or leaves a boat — the world-space
-            // position snaps to the embark point, which is not a cheat teleport.
-            if (GameState.currentBoat != _lastKnownBoat)
-            {
-                _lastKnownBoat = GameState.currentBoat;
-                _positionInitialized = false;
-            }
-
-            Vector3 currentPosition = Refs.charController.transform.position;
+            Vector3 currentPosition = Refs.ovrCameraRig.transform.position;
+            Vector3 currentOriginOffset = FloatingOriginManager.instance.outCurrentOffset;
 
             if (!_positionInitialized)
             {
                 _lastPlayerPosition = currentPosition;
+                _lastOriginOffset = currentOriginOffset;
                 _positionInitialized = true;
                 return;
             }
 
-            float distanceMoved = Vector3.Distance(currentPosition, _lastPlayerPosition);
+            Vector3 originDelta = currentOriginOffset - _lastOriginOffset;
+            float distanceMoved = Vector3.Distance(currentPosition, _lastPlayerPosition + originDelta);
+
             _lastPlayerPosition = currentPosition;
+            _lastOriginOffset = currentOriginOffset;
 
             if (distanceMoved > 100f)
             {
@@ -312,7 +312,7 @@ namespace SailwindRegatta
                 Plugin.Log.LogDebug($"Run saved retroactively on Supabase. Run id: {runId}");
         }
 
-        internal void AbortRace(string reason)
+        internal void AbortRace(string reason = null)
         {
             if (ActiveRun == null)
                 return;
@@ -321,7 +321,13 @@ namespace SailwindRegatta
             var abortedAt = DateTime.UtcNow;
             string raceName = ActiveRun.Race.DisplayName;
             Plugin.Log.LogInfo($"Race aborted: {raceName} - {reason}");
-            NotificationUi.instance.ShowNotification($"{raceName}\nRace aborted\n{reason}", 15f);
+
+            var notificationMessage = $"{raceName}\nRace aborted";
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                notificationMessage += $"\n{reason}";
+            }
+            NotificationUi.instance.ShowNotification(notificationMessage, 10f);
             ActiveRun = null;
 
             if (runId != null)

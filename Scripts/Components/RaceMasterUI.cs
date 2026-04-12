@@ -145,7 +145,7 @@ namespace SailwindRegatta
             if (RaceManager.Instance.ActiveRun == null)
                 RaceManager.Instance.StartRace(_race);
             else
-                RaceManager.Instance.AbortRace("Aborted by Race Master.");
+                RaceManager.Instance.AbortRace();
         }
     }
 }

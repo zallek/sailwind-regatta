@@ -16,11 +16,11 @@
 3. **Hit every checkpoint** — Invisible trigger zones mark each port along the route. Pass through them in order.
 4. **Cross the finish line** — The timer stops when you complete the final checkpoint. Your time is submitted to the leaderboard automatically.
 
-Time is tracked in real-world seconds — no pausing or reloading your way to a faster finish. If you close the game mid-race, your run resumes where you left off when you come back.
+If you close the game mid-race, your run resumes where you left off when you come back.
 
 ## Leaderboard
 
-Each race has a global leaderboard showing the top 5 fastest times. Walk up to any Race Master to see the current standings — the data is fetched before you even arrive so it's ready the moment you need it.
+Each race has a global leaderboard showing the top 5 fastest times. Walk up to any Race Master to see the current standings.
 
 ## Installation
 

@@ -73,9 +73,13 @@
     <Compile Include="Patches\SaveLoadManagerPatches.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Scripts\Components\CheckpointArea.cs" />
+    <Compile Include="Scripts\Components\LeaderboardPrefetcher.cs" />
+    <Compile Include="Scripts\Components\ProximityToggler.cs" />
+    <Compile Include="Scripts\Components\RaceLeaderboardUI.cs" />
     <Compile Include="Scripts\Components\RaceManager.cs" />
     <Compile Include="Scripts\Components\RaceMasterNPC.cs" />
-    <Compile Include="Scripts\Components\RaceMasterUI.cs" />
+    <Compile Include="Scripts\Components\RaceStartButton.cs" />
+    <Compile Include="Scripts\Components\RaceStartUI.cs" />
     <Compile Include="Scripts\Entities\Checkpoint.cs" />
     <Compile Include="Scripts\Entities\Race.cs" />
     <Compile Include="Scripts\Entities\RaceMaster.cs" />

@@ -4,14 +4,13 @@ using UnityEngine;
 namespace SailwindRegatta
 {
     // Injected at runtime as a child of a Port GameObject.
-    // Builds its own visual hierarchy and handles player proximity + click interaction.
+    // Builds the full NPC visual and UI hierarchy, then wires the reusable
+    // controller components (UIToggler, RaceLeaderboardUI, LeaderboardPrefetcher,
+    // RaceStartUI, RaceStartButton) together.
     internal class RaceMasterNPC : MonoBehaviour
     {
-        private Race _race;
-
         internal void Init(Race race, RaceMaster raceMaster)
         {
-            _race = race;
             transform.localPosition = raceMaster.Position;
             transform.localEulerAngles = raceMaster.EulerAngles;
 
@@ -19,26 +18,13 @@ namespace SailwindRegatta
             if (body == null)
                 return;
 
-            var uiGO = new GameObject("RaceMasterUI");
-            uiGO.transform.SetParent(body.transform, worldPositionStays: false);
-            var uiCol = uiGO.AddComponent<SphereCollider>();
-            uiCol.isTrigger = true;
-            uiCol.radius = 3f;
-            var _ui = uiGO.AddComponent<RaceMasterUI>();
-            _ui.Init(race);
-            var uiController = uiGO.AddComponent<RaceMasterUIController>();
-            uiController.Init(_ui);
+            if (raceMaster.CanStartRace)
+                BuildStartUI(body.transform, race);
 
-            // Outer prefetch trigger — larger radius so the leaderboard fetch starts
-            // before the player reaches the NPC, making data ready on arrival.
-            var prefetchGO = new GameObject("RaceMasterLeaderboardFetcher");
-            prefetchGO.transform.SetParent(body.transform, worldPositionStays: false);
-            var prefetchCol = prefetchGO.AddComponent<SphereCollider>();
-            prefetchCol.isTrigger = true;
-            prefetchCol.radius = 8f;
-            var prefetcher = prefetchGO.AddComponent<RaceMasterLeaderboardFetcher>();
-            prefetcher.Init(_ui, _race);
+            BuildLeaderboard(body.transform, race);
         }
+
+        // ── Character ─────────────────────────────────────────────────────────
 
         // Clones the CharacterCustomizer mesh from Port.ports[config.Avatar] and
         // sets up all components needed for GoPointer interaction.
@@ -72,96 +58,83 @@ namespace SailwindRegatta
 
             return go;
         }
-    }
 
-    internal class RaceMasterUIController : MonoBehaviour
-    {
-        private bool _playerNearby;
-        private RaceMasterUI _ui;
-        private float _refreshTimer;
+        // ── Start UI ──────────────────────────────────────────────────────────
 
-        internal void Init(RaceMasterUI ui)
+        private void BuildStartUI(Transform parent, Race race)
         {
-            _ui = ui;
+            var container = new GameObject("RaceMasterNPCStart");
+            container.transform.SetParent(parent, worldPositionStays: false);
+
+            // Visuals: TextMesh + BoxCollider (click) + RaceStartUI + RaceStartButton.
+            var uiGO = new GameObject("RaceMasterNPCStartUI");
+            uiGO.transform.SetParent(container.transform, worldPositionStays: false);
+            uiGO.transform.localPosition = new Vector3(0f, 1.4f, 0.3f);
+            uiGO.transform.localEulerAngles = new Vector3(0f, 180f, 0f);
+            var text = uiGO.AddComponent<TextMesh>();
+            text.alignment = TextAlignment.Center;
+            text.anchor = TextAnchor.MiddleCenter;
+            text.characterSize = 0.03f;
+            text.fontSize = 32;
+            var clickCol = uiGO.AddComponent<BoxCollider>();
+            clickCol.center = Vector3.zero;
+            clickCol.size = new Vector3(0.8f, 0.3f, 0.05f);
+            var startUi = uiGO.AddComponent<RaceStartUI>();
+            startUi.race = race;
+            var startButton = uiGO.AddComponent<RaceStartButton>();
+            startButton.race = race;
+            startButton.raceStartUI = startUi;
+            uiGO.SetActive(false); // ProximityToggler activates on player proximity
+
+            // Proximity trigger (3 m): shows/hides the start UI GO.
+            // Deactivating the GO also disables the BoxCollider → button not clickable when hidden.
+            var togglerGO = new GameObject("RaceMasterNPCStartUIToggler");
+            togglerGO.transform.SetParent(container.transform, worldPositionStays: false);
+            var togglerCol = togglerGO.AddComponent<SphereCollider>();
+            togglerCol.isTrigger = true;
+            togglerCol.radius = 3f;
+            var toggler = togglerGO.AddComponent<ProximityToggler>();
+            toggler.target = uiGO;
         }
 
-        private void OnTriggerEnter(Collider other)
+        // ── Leaderboard ───────────────────────────────────────────────────────
+
+        private void BuildLeaderboard(Transform parent, Race race)
         {
-            if (other.CompareTag("Player"))
-            {
-                _playerNearby = true;
-                _refreshTimer = 0f;
-                _ui.Show();
-            }
-        }
+            var container = new GameObject("RaceMasterLeaderboard");
+            container.transform.SetParent(parent, worldPositionStays: false);
 
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.CompareTag("Player"))
-            {
-                _playerNearby = false;
-                _ui.Hide();
-            }
-        }
+            // Visuals: TextMesh + RaceLeaderboardUI on the same GO.
+            var uiGO = new GameObject("RaceMasterLeaderboardUI");
+            uiGO.transform.SetParent(container.transform, worldPositionStays: false);
+            uiGO.transform.localPosition = new Vector3(-1f, 1.4f, 0.3f);
+            uiGO.transform.localEulerAngles = new Vector3(0f, 180f, 0f);
+            var text = uiGO.AddComponent<TextMesh>();
+            text.alignment = TextAlignment.Left;
+            text.anchor = TextAnchor.MiddleCenter;
+            text.characterSize = 0.03f;
+            text.fontSize = 32;
+            var lbUi = uiGO.AddComponent<RaceLeaderboardUI>();
+            uiGO.SetActive(false); // ProximityToggler activates on player proximity
 
-        private void Update()
-        {
-            if (!_playerNearby)
-                return;
-            _refreshTimer -= Time.deltaTime;
-            if (_refreshTimer <= 0f)
-            {
-                _ui.Refresh();
-                _refreshTimer = 0.5f;
-            }
-        }
-    }
+            // Proximity trigger (3 m): shows/hides the leaderboard UI GO.
+            var togglerGO = new GameObject("RaceMasterLeaderboardUIToggler");
+            togglerGO.transform.SetParent(container.transform, worldPositionStays: false);
+            var togglerCol = togglerGO.AddComponent<SphereCollider>();
+            togglerCol.isTrigger = true;
+            togglerCol.radius = 3f;
+            var toggler = togglerGO.AddComponent<ProximityToggler>();
+            toggler.target = uiGO;
 
-    // Sits on the outer-radius trigger child GameObject.
-    // Starts the leaderboard prefetch when the player enters range.
-    internal class RaceMasterLeaderboardFetcher : MonoBehaviour
-    {
-        private LeaderboardEntryResponse[] _leaderboardData;
-        private bool _leaderboardFetching;
-
-        private RaceMasterUI _ui;
-        private Race _race;
-
-        internal void Init(RaceMasterUI ui, Race race)
-        {
-            _ui = ui;
-            _race = race;
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.CompareTag("Player"))
-            {
-                FetchLeaderboard();
-            }
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.CompareTag("Player"))
-            {
-                _leaderboardData = null;
-                _leaderboardFetching = false;
-            }
-        }
-
-        private async void FetchLeaderboard()
-        {
-            if (Plugin.Session == null)
-                return;
-
-            if (_leaderboardData != null || _leaderboardFetching)
-                return;
-
-            _leaderboardFetching = true;
-            _leaderboardData = await SupabaseClient.GetLeaderboardAsync(Plugin.Session, _race.Id);
-            _leaderboardFetching = false;
-            _ui.LeaderboardData = _leaderboardData;
+            // Prefetch trigger (8 m): starts the async fetch before the player arrives.
+            var prefetchGO = new GameObject("RaceMasterLeaderboardPrefetcher");
+            prefetchGO.transform.SetParent(container.transform, worldPositionStays: false);
+            var prefetchCol = prefetchGO.AddComponent<SphereCollider>();
+            prefetchCol.isTrigger = true;
+            prefetchCol.radius = 8f;
+            var prefetcher = prefetchGO.AddComponent<LeaderboardPrefetcher>();
+            prefetcher.race = race;
+            prefetcher.raceLeaderboardUI = lbUi;
         }
     }
 }

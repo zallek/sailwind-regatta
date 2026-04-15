@@ -6,6 +6,7 @@
 
 - **The Grand Tour**: Gold Rock City → Fort Aestrin → Dragon Cliffs → Gold Rock City
 - **Aestrin Shores**: Fort Aestrin → Firefly Grotto → Fey Valley → Siren Song → Eastwind → Sunspire → Fort Aestrin
+- **The Tea Race**: Dragon Cliffs → Fort Aestrin
 (more to come, suggestions very welcome)
 
 ## How It Works

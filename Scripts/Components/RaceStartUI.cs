@@ -30,9 +30,9 @@ namespace SailwindRegatta
             if (RaceManager.Instance == null)
                 return;
             if (RaceManager.Instance.ActiveRun != null)
-                _text.text = $"Abort the race\n\n{RaceManager.Instance.ActiveRun.Race.DisplayName}";
+                _text.text = $"{RaceManager.Instance.ActiveRun.Race.DisplayName}\n\nAbort the race";
             else
-                _text.text = $"Start the race\n\n{race.DisplayName}";
+                _text.text = $"{race.DisplayName}\n\nStart the race";
         }
     }
 }

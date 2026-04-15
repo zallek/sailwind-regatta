@@ -220,14 +220,15 @@ namespace SailwindRegatta
             {
                 if (raceMaster.PortName.ToPortString() != port.GetPortName())
                     continue;
-                if (port.GetComponentInChildren<RaceMasterNPC>() != null)
-                    continue;
 
                 var race = RaceRegistry.Races.Find(r => r.Id == raceMaster.RaceId);
                 if (race == null)
                     continue;
 
-                var go = new GameObject("RaceMasterNPC");
+                var goName = $"RaceMasterNPC {raceMaster.PortName.ToPortString()} {race.DisplayName}";
+                if (port.transform.Find(goName) != null)
+                    continue;
+                var go = new GameObject(goName);
                 go.transform.SetParent(port.transform, worldPositionStays: false);
                 go.AddComponent<RaceMasterNPC>().Init(race, raceMaster);
 

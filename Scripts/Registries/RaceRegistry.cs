@@ -31,6 +31,7 @@ namespace SailwindRegatta
                     CheckpointName.FortAestrin,
                 }
             ),
+            new Race(id: 3, displayName: "The Tea Race", checkpoints: new[] { CheckpointName.DragonCliffs, CheckpointName.FortAestrin }),
         };
 
         public static Race GetById(int id)

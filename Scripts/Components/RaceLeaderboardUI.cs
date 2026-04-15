@@ -72,7 +72,7 @@ namespace SailwindRegatta
                     sb.AppendLine($"{e.rank}. {name}  {TimeUtils.FormatDuration(e.duration_minutes)}");
                 }
             }
-            _text.text = sb.ToString();
+            _text.text = sb.ToString().TrimEnd('\r', '\n');
         }
     }
 }

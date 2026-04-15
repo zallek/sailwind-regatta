@@ -25,6 +25,21 @@ namespace SailwindRegatta
                 avatar: 2,
                 raceId: 2
             ),
+            new RaceMaster(
+                portName: PortName.DragonCliffs,
+                position: new Vector3(-12f, -1.15f, 12f),
+                eulerAngles: new Vector3(0f, 340f, 0f),
+                avatar: 9,
+                raceId: 3
+            ),
+            new RaceMaster(
+                portName: PortName.FortAestrin,
+                position: new Vector3(29f, -0.54f, 3f),
+                eulerAngles: new Vector3(0f, 340f, 0f),
+                avatar: 9,
+                raceId: 3,
+                canStartRace: false
+            ),
         };
     }
 }

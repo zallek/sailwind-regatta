@@ -68,5 +68,6 @@ namespace SailwindRegatta
         public int rank;
         public string player_name;
         public long duration_minutes;
+        public int boat_type_id;
     }
 }

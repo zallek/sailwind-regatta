@@ -47,6 +47,29 @@ namespace SailwindRegatta
 
         private void OnEnable() => Refresh();
 
+        private static string BoatName(int id)
+        {
+            switch (id)
+            {
+                case 10:
+                    return "Dhow";
+                case 20:
+                    return "Sanbuq";
+                case 40:
+                    return "Coq";
+                case 50:
+                    return "Brig";
+                case 80:
+                    return "Junk";
+                case 90:
+                    return "Kakam";
+                case 160:
+                    return "Sloop (mod)";
+                default:
+                    return "Modded boat";
+            }
+        }
+
         private void Refresh()
         {
             if (_leaderboardData == null)
@@ -68,8 +91,9 @@ namespace SailwindRegatta
             {
                 foreach (var e in _leaderboardData)
                 {
-                    string name = e.player_name.Length > 15 ? e.player_name.Substring(0, 15) : e.player_name;
-                    sb.AppendLine($"{e.rank}. {name}  {TimeUtils.FormatDuration(e.duration_minutes)}");
+                    string name = e.player_name.Length > 20 ? e.player_name.Substring(0, 20) : e.player_name;
+                    sb.AppendLine($"{e.rank}. {name}");
+                    sb.AppendLine($"    {TimeUtils.FormatDuration(e.duration_minutes)}  {BoatName(e.boat_type_id)}");
                 }
             }
             _text.text = sb.ToString().TrimEnd('\r', '\n');

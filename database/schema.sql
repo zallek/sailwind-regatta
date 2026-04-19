@@ -83,7 +83,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5, dev boolean DEFAULT false, player_id uuid DEFAULT NULL)
-RETURNS TABLE (rank int, player_name text, duration_minutes bigint)
+RETURNS TABLE (rank int, player_name text, duration_minutes bigint, boat_type_id int)
 LANGUAGE sql SECURITY DEFINER
 SET search_path = ''
 AS $$
@@ -91,7 +91,8 @@ AS $$
         SELECT DISTINCT ON (r.player_id)
             r.player_id,
             p.name AS player_name,
-            r.duration_minutes
+            r.duration_minutes,
+            r.boat_type_id
         FROM public.run r
         JOIN public.player p ON p.id = r.player_id
         WHERE r.race_id     = get_leaderboard.race_id
@@ -105,12 +106,13 @@ AS $$
             r.player_id,
             ROW_NUMBER() OVER (ORDER BY r.duration_minutes ASC) AS rank,
             r.player_name,
-            r.duration_minutes
+            r.duration_minutes,
+            r.boat_type_id
         FROM best_runs r
     )
-    SELECT rank, player_name, duration_minutes FROM ranked WHERE rank <= get_leaderboard.max_results
+    SELECT rank, player_name, duration_minutes, boat_type_id FROM ranked WHERE rank <= get_leaderboard.max_results
     UNION ALL
-    SELECT rank, player_name, duration_minutes FROM ranked
+    SELECT rank, player_name, duration_minutes, boat_type_id FROM ranked
         WHERE get_leaderboard.player_id IS NOT NULL
           AND player_id = get_leaderboard.player_id
           AND rank > get_leaderboard.max_results

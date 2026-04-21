@@ -8,6 +8,7 @@ CREATE TABLE player (
     id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
     key        text        UNIQUE NOT NULL,  -- SHA256(steamId + salt), computed client-side
     name       text        NOT NULL,
+    alias      text,                         -- admin-assigned display name, overrides name in leaderboard
     dev        boolean     NOT NULL DEFAULT false,
     created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -15,7 +16,7 @@ CREATE TABLE player (
 CREATE TABLE run (
     id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
     player_id    uuid        NOT NULL REFERENCES player(id),
-    race_id      int,
+    race_id      int         NOT NULL,
     boat_type_id int,             -- SaveableObject.sceneIndex, NULL until first steering-wheel use
     started_at   timestamptz NOT NULL,
     finished_at  timestamptz,     -- NULL while in progress
@@ -119,7 +120,7 @@ AS $$
     WITH best_runs AS (
         SELECT DISTINCT ON (r.player_id)
             r.player_id,
-            p.name AS player_name,
+            COALESCE(p.alias, p.name) AS player_name,
             r.duration_minutes,
             r.boat_type_id
         FROM public.run r

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -274,11 +275,11 @@ namespace SailwindRegatta
             if (Plugin.Session == null)
                 return;
 
-            string id = await SupabaseClient.StartRunAsync(Plugin.Session, raceId, startedAt);
-            if (id != null && ActiveRun != null)
+            string runId = await SupabaseClient.StartRunAsync(Plugin.Session, raceId, startedAt);
+            if (runId != null && ActiveRun != null)
             {
-                ActiveRun.Id = id;
-                Plugin.Log.LogDebug($"Run started on Supabase. Run id: {id}");
+                ActiveRun.Id = runId;
+                Plugin.Log.LogDebug($"Run started on Supabase. Run id: {runId}");
             }
         }
 
@@ -332,7 +333,10 @@ namespace SailwindRegatta
 
             var success = await SupabaseClient.FinishRunAsync(Plugin.Session, runId, finishedAt, duration, boatTypeId);
             if (success)
+            {
                 Plugin.Log.LogDebug($"Run finished on Supabase. Run id: {runId}");
+                await SaveRunModsAsync(runId);
+            }
         }
 
         private async Task SaveRunRetroactiveAsync(int raceId, DateTime startedAt, DateTime finishedAt, long duration, int? boatTypeId)
@@ -348,7 +352,17 @@ namespace SailwindRegatta
             }
             var success = await SupabaseClient.FinishRunAsync(Plugin.Session, runId, finishedAt, duration, boatTypeId);
             if (success)
+            {
                 Plugin.Log.LogDebug($"Run saved retroactively on Supabase. Run id: {runId}");
+                await SaveRunModsAsync(runId);
+            }
+        }
+
+        private static async Task SaveRunModsAsync(string runId)
+        {
+            string[] modGuids = BepInEx.Bootstrap.Chainloader.PluginInfos.Keys.ToArray();
+            await SupabaseClient.SaveRunModsAsync(runId, modGuids);
+            Plugin.Log.LogDebug($"Saved {modGuids.Length} mods for run {runId}");
         }
 
         internal void AbortRace(string reason = null)

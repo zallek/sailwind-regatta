@@ -43,6 +43,14 @@ namespace SailwindRegatta
         public long duration_minutes;
     }
 
+    // Used by the save_run_mods RPC — field names must match the SQL function parameter names.
+    [Serializable]
+    internal class SaveRunModsRpcRequest
+    {
+        public string run_id;
+        public string[] mod_guids;
+    }
+
     // Used by the abort_run RPC — field names must match the SQL function parameter names.
     [Serializable]
     internal class AbortRunRpcRequest

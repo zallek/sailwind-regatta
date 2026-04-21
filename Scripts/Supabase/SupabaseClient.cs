@@ -144,6 +144,26 @@ namespace SailwindRegatta
             }
         }
 
+        internal static async Task SaveRunModsAsync(string runId, string[] modGuids)
+        {
+            try
+            {
+                var body = JsonUtility.ToJson(new SaveRunModsRpcRequest { run_id = runId, mod_guids = modGuids });
+
+                var req = BuildRequest(HttpMethod.Post, "/rest/v1/rpc/save_run_mods", body);
+                var response = await _http.SendAsync(req);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string raw = await response.Content.ReadAsStringAsync();
+                    Plugin.Log.LogError($"Supabase save_run_mods failed ({(int)response.StatusCode}): {raw}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"Supabase SaveRunModsAsync exception: {ex.Message}");
+            }
+        }
+
         internal static async Task<bool> AbortRunAsync(PlayerSession session, string runId, DateTime abortedAt)
         {
             try

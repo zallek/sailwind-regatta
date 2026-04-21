@@ -24,6 +24,19 @@ CREATE TABLE run (
     created_at   timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE mods (
+    guid            text        PRIMARY KEY,
+    speed_advantage boolean     NOT NULL DEFAULT false,
+    created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE run_mod (
+    run_id   uuid NOT NULL REFERENCES run(id),
+    mod_guid text NOT NULL REFERENCES mods(guid),
+    PRIMARY KEY (run_id, mod_guid)
+);
+
+
 -- ============================================================
 -- RPC functions
 -- ============================================================
@@ -82,6 +95,22 @@ BEGIN
 END;
 $$;
 
+
+CREATE OR REPLACE FUNCTION save_run_mods(run_id uuid, mod_guids text[])
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+    INSERT INTO public.mods (guid)
+    SELECT unnest(mod_guids)
+    ON CONFLICT (guid) DO NOTHING;
+
+    INSERT INTO public.run_mod (run_id, mod_guid)
+    SELECT save_run_mods.run_id, unnest(mod_guids)
+    ON CONFLICT DO NOTHING;
+END;
+$$;
+
 CREATE OR REPLACE FUNCTION get_leaderboard(race_id int, max_results int DEFAULT 5, dev boolean DEFAULT false, player_id uuid DEFAULT NULL)
 RETURNS TABLE (rank int, player_name text, duration_minutes bigint, boat_type_id int)
 LANGUAGE sql SECURITY DEFINER
@@ -126,3 +155,5 @@ $$;
 
 ALTER TABLE player ENABLE ROW LEVEL SECURITY;
 ALTER TABLE run ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mods ENABLE ROW LEVEL SECURITY;
+ALTER TABLE run_mod ENABLE ROW LEVEL SECURITY;

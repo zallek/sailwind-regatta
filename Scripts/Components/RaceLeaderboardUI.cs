@@ -63,6 +63,8 @@ namespace SailwindRegatta
                     return "Junk";
                 case 90:
                     return "Kakam";
+                case 153:
+                    return "Clipper (mod)";
                 case 160:
                     return "Sloop (mod)";
                 default:

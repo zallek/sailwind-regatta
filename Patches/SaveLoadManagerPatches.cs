@@ -17,6 +17,8 @@ namespace SailwindRegatta
         static void Postfix()
         {
             SaveUtils.Load();
+            if (RaceManager.Instance != null)
+                _ = RaceManager.Instance.TrySaveRunModsOnLoadAsync();
         }
     }
 }

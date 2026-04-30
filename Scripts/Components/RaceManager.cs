@@ -280,7 +280,16 @@ namespace SailwindRegatta
             {
                 ActiveRun.Id = runId;
                 Plugin.Log.LogDebug($"Run started on Supabase. Run id: {runId}");
+                await SaveRunModsAsync(runId);
             }
+        }
+
+        internal async Task TrySaveRunModsOnLoadAsync()
+        {
+            if (Plugin.Session == null || ActiveRun?.Id == null)
+                return;
+
+            await SaveRunModsAsync(ActiveRun.Id);
         }
 
         private void TryAdvanceCheckpoint(Checkpoint checkpoint)

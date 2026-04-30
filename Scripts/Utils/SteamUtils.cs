@@ -30,11 +30,17 @@ namespace SailwindRegatta
                 string steamPath = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string;
 
                 if (steamPath == null)
+                {
+                    Plugin.Log.LogWarning("Steam registry key not found (HKCU\\Software\\Valve\\Steam → SteamPath). Steam may not be installed.");
                     return null;
+                }
 
                 string vdfPath = Path.Combine(steamPath, "config", "loginusers.vdf");
                 if (!File.Exists(vdfPath))
+                {
+                    Plugin.Log.LogWarning($"loginusers.vdf not found at: {vdfPath}");
                     return null;
+                }
 
                 // VDF structure:
                 // "users" { "steamid" { "PersonaName" "Name" ... "MostRecent" "1" } }
@@ -46,6 +52,7 @@ namespace SailwindRegatta
                 string currentSteamId = null;
                 string personaName = null;
                 bool mostRecent = false;
+                int userCount = 0;
 
                 foreach (string raw in lines)
                 {
@@ -64,6 +71,8 @@ namespace SailwindRegatta
 
                         if (depth == 2)
                         {
+                            if (currentSteamId != null)
+                                userCount++;
                             // Reset for next user block.
                             currentSteamId = null;
                             personaName = null;
@@ -93,10 +102,14 @@ namespace SailwindRegatta
                     }
                 }
 
+                Plugin.Log.LogWarning(
+                    $"loginusers.vdf parsed ({userCount} user(s) found) but no MostRecent user identified. The file may be empty or use an unexpected format."
+                );
                 return null;
             }
-            catch
+            catch (System.Exception ex)
             {
+                Plugin.Log.LogError($"Exception while reading Steam user data: {ex.GetType().Name}: {ex.Message}");
                 return null;
             }
         }

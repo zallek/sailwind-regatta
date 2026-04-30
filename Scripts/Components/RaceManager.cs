@@ -56,6 +56,10 @@ namespace SailwindRegatta
             CheckTeleport();
             CheckTimescale();
             UpdateElapsedHours();
+#if DEBUG
+            if (Input.GetKeyDown(KeyCode.F8))
+                ShipModelSpawner.SpawnForPlayer();
+#endif
         }
 
         private void UpdateElapsedHours()

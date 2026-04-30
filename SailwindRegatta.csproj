@@ -53,6 +53,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ClothModule">
+      <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.ClothModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(SailwindDir)\Sailwind_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
@@ -77,6 +80,7 @@
     <Compile Include="Scripts\Components\ProximityToggler.cs" />
     <Compile Include="Scripts\Components\RaceLeaderboardUI.cs" />
     <Compile Include="Scripts\Components\RaceManager.cs" />
+    <Compile Include="Scripts\Components\ShipModelItem.cs" />
     <Compile Include="Scripts\Components\RaceMasterNPC.cs" />
     <Compile Include="Scripts\Components\RaceStartButton.cs" />
     <Compile Include="Scripts\Components\RaceStartUI.cs" />
@@ -94,6 +98,7 @@
     <Compile Include="Scripts\Supabase\SupabaseConfig.cs" />
     <Compile Include="Scripts\Supabase\SupabaseModels.cs" />
     <Compile Include="Scripts\Utils\BoatTypeUtils.cs" />
+    <Compile Include="Scripts\Utils\ShipModelSpawner.cs" />
     <Compile Include="Scripts\Utils\JsonUtils.cs" />
     <Compile Include="Scripts\Utils\SaveUtils.cs" />
     <Compile Include="Scripts\Utils\SteamUtils.cs" />

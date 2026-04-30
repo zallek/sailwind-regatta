@@ -13,7 +13,7 @@ namespace SailwindRegatta
     {
         public const string PLUGIN_GUID = "com.zallek.sailwindregatta";
         public const string PLUGIN_NAME = "Sailwind Regatta";
-        public const string PLUGIN_VERSION = "0.2.1";
+        public const string PLUGIN_VERSION = "0.2.2";
 
         internal static Plugin Instance { get; private set; }
         internal static ManualLogSource Log { get; private set; }

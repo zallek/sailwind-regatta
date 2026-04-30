@@ -53,9 +53,17 @@ namespace SailwindRegatta
 
         private void Update()
         {
-            CheckTeleport();
-            CheckTimescale();
-            UpdateElapsedHours();
+            try
+            {
+                CheckTeleport();
+                CheckTimescale();
+                UpdateElapsedHours();
+            }
+            catch (Exception e)
+            {
+                AbortRace("Error while updating race timer");
+                Plugin.Log.LogError($"Error while updating race timer: {e.Message}");
+            }
         }
 
         private void UpdateElapsedHours()
